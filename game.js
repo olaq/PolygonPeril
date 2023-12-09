@@ -11,7 +11,7 @@ class FPSCounter {
         // Calculate the time difference
         let now = Date.now();
         let delta = now - this.lastTime;
-    
+
         // Increase the frame count
         this.frames++;
 
@@ -298,6 +298,22 @@ function preapreBackground(ctx) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+function updateGame() {
+    calculateRectanglePosition();
+    drawPulsatingRectangle();
+    drawCircle();
+    drawCounter();
+    moveTriangle();
+    drawTriangle();
+    drawLives();
+    checkOverlapTriangleRectangle();
+    checkOverlapRectangleCircle();
+    time++;
+    // Display the FPS
+    displayText(ctx, 'FPS: ' + fpsCounter.calculateFPS(), 10, canvas.height - 15, 'grey', 14, 'left');
+
+}
+
 function gameLoop() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -307,20 +323,7 @@ function gameLoop() {
         displayGameIntro(ctx);
         displayInstructions(ctx);
     } else if (lives > 0) {
-        calculateRectanglePosition();
-        drawPulsatingRectangle();
-        drawCircle();
-        drawCounter();
-        moveTriangle();
-        drawTriangle();
-        drawLives();
-        checkOverlapTriangleRectangle();
-        checkOverlapRectangleCircle();
-        time++;
-
-        // Display the FPS
-        let fps = fpsCounter.calculateFPS();
-        displayText(ctx, 'FPS: ' + fps, 30, canvas.height - 20, 'white', 14);
+        updateGame();
 
         requestAnimationFrame(gameLoop);
     } else {
@@ -349,7 +352,12 @@ window.onload = function () {
     gameLoop();
 }
 
+
 canvas.addEventListener('click', () => {
+    goFullScreen();
+});
+
+function goFullScreen() {
     if (canvas.requestFullscreen) {
         canvas.requestFullscreen();
     } else if (canvas.mozRequestFullScreen) { // Firefox
@@ -359,7 +367,7 @@ canvas.addEventListener('click', () => {
     } else if (canvas.msRequestFullscreen) { // IE/Edge
         canvas.msRequestFullscreen();
     }
-});
+}
 
 canvas.addEventListener('click', function () {
     if (lives <= 0) {
