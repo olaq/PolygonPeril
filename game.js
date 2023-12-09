@@ -1,4 +1,30 @@
 // game.js
+
+class FPSCounter {
+    constructor() {
+        this.lastTime = Date.now();
+        this.frames = 0;
+        this.fps = 0;
+    }
+
+    calculateFPS() {
+        // Calculate the time difference
+        let now = Date.now();
+        let delta = now - this.lastTime;
+    
+        // Increase the frame count
+        this.frames++;
+
+        // Calculate the FPS every second
+        if (delta >= 1000) {
+            this.fps = this.frames;
+            this.frames = 0;
+            this.lastTime = now;
+        }
+        return this.fps;
+    }
+}
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -29,6 +55,7 @@ let gameStarted = false;
 
 const circleRadius = 10; // Change this to change the size of the circle
 
+let fpsCounter = new FPSCounter();
 
 const keys = {
     ArrowUp: false,
@@ -290,6 +317,11 @@ function gameLoop() {
         checkOverlapTriangleRectangle();
         checkOverlapRectangleCircle();
         time++;
+
+        // Display the FPS
+        let fps = fpsCounter.calculateFPS();
+        displayText(ctx, 'FPS: ' + fps, 30, canvas.height - 20, 'white', 14);
+
         requestAnimationFrame(gameLoop);
     } else {
         ctx.font = '50px Arial';
