@@ -253,10 +253,7 @@ function polygonsOverlap(polygon1, polygon2) {
 }
 
 function displayCounter() {
-    ctx.font = '20px Arial';
-    ctx.fillStyle = 'grey';
-    ctx.textAlign = 'right';
-    ctx.fillText(`Points: ${counter}`, canvas.width - 10, 30);
+    displayText(ctx, `Points: ${counter}`, canvas.width - 10, 30, 'grey', 20, 'right')
 }
 
 function displayLives() {
@@ -317,13 +314,14 @@ function gameLoop() {
         updateGame();
         requestAnimationFrame(gameLoop);
     } else {
-        ctx.font = '50px Arial';
-        ctx.fillStyle = 'red';
-        ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
-        ctx.fillText(`Points: ${counter}`, canvas.width / 2, canvas.height / 2 + 50);
-        ctx.fillText('click to continue', canvas.width / 2, canvas.height / 2 + 100);
+        displayGameOver();
     }
+}
+
+function displayGameOver() {
+    displayText(ctx, 'GAME OVER', canvas.width / 2, canvas.height / 2, 'red', 50);
+    displayText(ctx, `Points: ${counter}`, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
+    displayText(ctx, 'click to continue', canvas.width / 2, canvas.height / 2 + 100 , 'red', 20);
 }
 
 window.onload = function () {
