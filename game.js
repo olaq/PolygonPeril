@@ -1,30 +1,3 @@
-// game.js
-
-class FPSCounter {
-    constructor() {
-        this.lastTime = Date.now();
-        this.frames = 0;
-        this.fps = 0;
-    }
-
-    calculateFPS() {
-        // Calculate the time difference
-        let now = Date.now();
-        let delta = now - this.lastTime;
-
-        // Increase the frame count
-        this.frames++;
-
-        // Calculate the FPS every second
-        if (delta >= 1000) {
-            this.fps = this.frames;
-            this.frames = 0;
-            this.lastTime = now;
-        }
-        return this.fps;
-    }
-}
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -55,7 +28,7 @@ let gameStarted = false;
 
 const circleRadius = 10; // Change this to change the size of the circle
 
-let fpsCounter = new FPSCounter();
+const fpsCounter = new FPSCounter();
 
 const keys = {
     ArrowUp: false,
@@ -99,11 +72,6 @@ function calculateRectanglePosition() {
     if (newY >= 0 + baseSize / 2 && newY <= canvas.height - baseSize / 2) {
         y = newY;
     }
-
-    // // log the keys that are pressed
-    // console.log(keys);
-    // // log the rectangle position
-    // console.log(`x: ${x}, y: ${y}`);
 }
 
 function drawPulsatingRectangle() {
@@ -336,8 +304,6 @@ function gameLoop() {
     }
 }
 
-
-
 window.onload = function () {
     x = canvas.width / 2;
     y = canvas.height / 2;
@@ -351,7 +317,6 @@ window.onload = function () {
     // Start the game loop
     gameLoop();
 }
-
 
 canvas.addEventListener('click', () => {
     goFullScreen();
