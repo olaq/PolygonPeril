@@ -33,7 +33,7 @@ const keys = {
 };
 
 // mouse position
-let targetX 
+let targetX
 let targetY
 let mouseDown = false;
 
@@ -72,9 +72,6 @@ canvas.addEventListener('mousemove', function (event) {
 });
 
 function calculateRectanglePosition() {
-    // Calculate the new position
-    console.log('rectangleObj', rectangleObj);
-
     let newX = rectangleObj.x
     let newY = rectangleObj.y
     if (keys.ArrowUp) newY -= rectangleSpeed;
@@ -83,8 +80,8 @@ function calculateRectanglePosition() {
     if (keys.ArrowRight) newX += rectangleSpeed;
     if (mouseDown) {
         // Calculate the direction vector
-        let dx = targetX - x;
-        let dy = targetY - y;
+        let dx = targetX - rectangleObj.x;
+        let dy = targetY - rectangleObj.y;
         let distance = Math.sqrt(dx * dx + dy * dy);
         let directionX = dx / distance;
         let directionY = dy / distance;
@@ -95,18 +92,16 @@ function calculateRectanglePosition() {
 
     // Check if the new position is inside the canvas
     if (newX >= 0 + baseSize / 2 && newX <= canvas.width - baseSize / 2) {
-        x = newX;
+        rectangleObj.x = newX;
     }
     if (newY >= 0 + baseSize / 2 && newY <= canvas.height - baseSize / 2) {
-        y = newY;
+        rectangleObj.y = newY;
     }
-    // update rectangle object
-    rectangleObj = new Rectangle(x, y, baseSize, baseSize);
 }
 
 function drawRectangle() {
     let rectangle = rectangleObj.calculatePolygon();
-    
+
     ctx.fillStyle = 'blue';
     ctx.beginPath();
     ctx.moveTo(rectangle[0].x, rectangle[0].y);
@@ -118,7 +113,6 @@ function drawRectangle() {
 }
 
 function drawCircle() {
-    console.log('circleObj', circleObj);
     ctx.beginPath();
     ctx.arc(circleObj.x, circleObj.y, circleObj.radius, 0, 2 * Math.PI, false);
     ctx.fillStyle = 'green';
@@ -130,7 +124,7 @@ function calculateRandomCirclePosition() {
     circleObj.y = Math.random() * (canvas.height - 50);
 }
 
-function checkOverlapRectangleCircle() { 
+function checkOverlapRectangleCircle() {
     const dx = circleObj.x - rectangleObj.x;
     const dy = circleObj.y - rectangleObj.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -142,13 +136,6 @@ function checkOverlapRectangleCircle() {
         // Move the circle to a new random position
         calculateRandomCirclePosition();
     }
-}
-
-function drawCounter() {
-    ctx.font = '20px Arial';
-    ctx.fillStyle = 'grey';
-    ctx.textAlign = 'right';
-    ctx.fillText(`Points: ${counter}`, canvas.width - 10, 30);
 }
 
 function drawTriangle() {
@@ -163,8 +150,8 @@ function drawTriangle() {
 }
 
 function moveTriangle() {
-    const dx = x - triangleObj.x;
-    const dy = y - triangleObj.y;
+    const dx = rectangleObj.x - triangleObj.x;
+    const dy = rectangleObj.y - triangleObj.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance > 0) {
@@ -179,17 +166,6 @@ function moveTriangle() {
     }
 }
 
-function drawLives() {
-    ctx.font = '20px Arial';
-    ctx.fillStyle = 'red';
-    ctx.textAlign = 'left';
-    let livesText = '';
-    for (let i = 0; i < lives; i++) {
-        livesText += '\u2764 ';
-    }
-    ctx.fillText(livesText, 10, 30);
-}
-
 function checkOverlapTriangleRectangle() {
 
     let rectangle = rectangleObj.calculatePolygon();
@@ -197,30 +173,30 @@ function checkOverlapTriangleRectangle() {
 
     // Check if the rectangle and triangle overlap using SAT
     if (polygonsOverlap(rectangle, triangle)) {
-        // log triangle and rectangle
-        console.log('triangle', triangle);
-        console.log('rectangle', rectangle);
+        // // log triangle and rectangle
+        // console.log('triangle', triangle);
+        // console.log('rectangle', rectangle);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw triangle shadow
-        ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-        ctx.beginPath();
-        ctx.moveTo(triangle[0].x, triangle[0].y);
-        ctx.lineTo(triangle[1].x, triangle[1].y);
-        ctx.lineTo(triangle[2].x, triangle[2].y);
-        ctx.closePath();
-        ctx.fill();
+        // // Draw triangle shadow
+        // ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+        // ctx.beginPath();
+        // ctx.moveTo(triangle[0].x, triangle[0].y);
+        // ctx.lineTo(triangle[1].x, triangle[1].y);
+        // ctx.lineTo(triangle[2].x, triangle[2].y);
+        // ctx.closePath();
+        // ctx.fill();
 
-        // Draw rectangle shadow
-        ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-        ctx.beginPath();
-        ctx.moveTo(rectangle[0].x, rectangle[0].y);
-        ctx.lineTo(rectangle[1].x, rectangle[1].y);
-        ctx.lineTo(rectangle[2].x, rectangle[2].y);
-        ctx.lineTo(rectangle[3].x, rectangle[3].y);
-        ctx.closePath();
-        ctx.fill();
+        // // Draw rectangle shadow
+        // ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+        // ctx.beginPath();
+        // ctx.moveTo(rectangle[0].x, rectangle[0].y);
+        // ctx.lineTo(rectangle[1].x, rectangle[1].y);
+        // ctx.lineTo(rectangle[2].x, rectangle[2].y);
+        // ctx.lineTo(rectangle[3].x, rectangle[3].y);
+        // ctx.closePath();
+        // ctx.fill();
 
         // debugger; // Pause execution here
 
@@ -276,12 +252,23 @@ function polygonsOverlap(polygon1, polygon2) {
     return true;
 }
 
+function displayCounter() {
+    ctx.font = '20px Arial';
+    ctx.fillStyle = 'grey';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Points: ${counter}`, canvas.width - 10, 30);
+}
 
-function displayText(ctx, text, x, y, color = 'white', fontSize = 20, align = 'center') {
-    ctx.font = `${fontSize}px Arial`;
-    ctx.fillStyle = color;
-    ctx.textAlign = align;
-    ctx.fillText(text, x, y);
+function displayLives() {
+    let livesText = '';
+    for (let i = 0; i < lives; i++) {
+        livesText += '\u2764 ';
+    }
+    displayText(ctx, livesText, 10, 30, 'red', 20, 'left');
+}
+
+function displayFps() {
+    displayText(ctx, 'FPS: ' + fpsCounter.calculateFPS(), 10, canvas.height - 15, 'grey', 14, 'left');
 }
 
 function displayGameIntro(ctx) {
@@ -298,30 +285,24 @@ function displayInstructions(ctx) {
 }
 
 function preapreBackground(ctx) {
-    // Fill the background with black color
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 function updateGame() {
-    //log
-    console.log('triangleObj', triangleObj);
-    console.log('rectangleObj', rectangleObj);
-    console.log('circleObj', circleObj);
+    
+    displayCounter();
+    displayLives();
+    displayFps();
+
     calculateRectanglePosition();
     drawRectangle();
     drawCircle();
-    drawCounter();
     moveTriangle();
     drawTriangle();
-    drawLives();
+    
     checkOverlapTriangleRectangle();
     checkOverlapRectangleCircle();
-    displayFps();
-}
-
-function displayFps() {
-    displayText(ctx, 'FPS: ' + fpsCounter.calculateFPS(), 10, canvas.height - 15, 'grey', 14, 'left');
 }
 
 function gameLoop() {
@@ -346,10 +327,8 @@ function gameLoop() {
 }
 
 window.onload = function () {
-    x = canvas.width / 2;
-    y = canvas.height / 2;
-
-    // Calculate a random position for the circle and triangle
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
     let circleX = Math.random() * (canvas.width - 50);
     let circleY = Math.random() * (canvas.height - 50);
     let triangleX = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
@@ -389,7 +368,7 @@ canvas.addEventListener('click', function () {
         let circleY = Math.random() * (canvas.height - 50);
         let triangleX = Math.random() * (canvas.width - 50);
         let triangleY = Math.random() * (canvas.height - 50);
-        
+
         rectangleObj = new Rectangle(x, y, baseSize, baseSize);
         triangleObj = new Triangle(triangleX, triangleY);
         circleObj = new Circle(circleX, circleY, circleRadius);
