@@ -202,10 +202,18 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (!gameStarted) {
+        // Fill the background with black color
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
         ctx.font = '50px Arial';
         ctx.fillStyle = 'red';
         ctx.textAlign = 'center';
-        ctx.fillText('Click to play the game', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('Polygon Peril', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.font = '30px Arial';
+        ctx.fillText('Survive the Shape Shift!', canvas.width / 2, canvas.height / 2);
+        ctx.font = '20px Arial';
+        ctx.fillText('Click to play the game', canvas.width / 2, canvas.height / 2 + 50);
     } else if (lives > 0) {
         calculateRectanglePosition();
         drawPulsatingRectangle();
