@@ -36,6 +36,7 @@ const keys = {
 let targetX
 let targetY
 let mouseDown = false;
+let touchDown = false;
 
 canvas.addEventListener('click', function () {
     if (!gameStarted && document.fullscreenElement) {
@@ -71,6 +72,21 @@ canvas.addEventListener('mousemove', function (event) {
     }
 });
 
+canvas.addEventListener('touchstart', function (event) {
+    touchDown = true;
+    targetX = event.touches[0].clientX;
+    targetY = event.touches[0].clientY;
+}, false);
+
+canvas.addEventListener('touchmove', function (event) {
+    targetX = event.touches[0].clientX;
+    targetY = event.touches[0].clientY;
+}, false);
+
+canvas.addEventListener('touchend', function (event) {
+    touchDown = false;
+}, false);
+
 function calculateRectanglePosition() {
     let newX = rectangleObj.x
     let newY = rectangleObj.y
@@ -78,7 +94,7 @@ function calculateRectanglePosition() {
     if (keys.ArrowDown) newY += rectangleSpeed;
     if (keys.ArrowLeft) newX -= rectangleSpeed;
     if (keys.ArrowRight) newX += rectangleSpeed;
-    if (mouseDown) {
+    if (mouseDown || touchDown) {
         // Calculate the direction vector
         let dx = targetX - rectangleObj.x;
         let dy = targetY - rectangleObj.y;
@@ -287,7 +303,7 @@ function preapreBackground(ctx) {
 }
 
 function updateGame() {
-    
+
     displayCounter();
     displayLives();
     displayFps();
@@ -297,7 +313,7 @@ function updateGame() {
     drawCircle();
     moveTriangle();
     drawTriangle();
-    
+
     checkOverlapTriangleRectangle();
     checkOverlapRectangleCircle();
 }
@@ -307,9 +323,7 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (!gameStarted) {
-        preapreBackground(ctx);
-        displayGameIntro(ctx);
-        displayInstructions(ctx);
+        displayStartGame();
     } else if (lives > 0) {
         updateGame();
         requestAnimationFrame(gameLoop);
@@ -318,10 +332,16 @@ function gameLoop() {
     }
 }
 
+function displayStartGame() {
+    preapreBackground(ctx);
+    displayGameIntro(ctx);
+    displayInstructions(ctx);
+}
+
 function displayGameOver() {
     displayText(ctx, 'GAME OVER', canvas.width / 2, canvas.height / 2, 'red', 50);
     displayText(ctx, `Points: ${counter}`, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
-    displayText(ctx, 'click to continue', canvas.width / 2, canvas.height / 2 + 100 , 'red', 20);
+    displayText(ctx, 'click to continue', canvas.width / 2, canvas.height / 2 + 100, 'red', 20);
 }
 
 window.onload = function () {
@@ -337,8 +357,8 @@ window.onload = function () {
     triangleObj = new Triangle(triangleX, triangleY);
     circleObj = new Circle(circleX, circleY, circleRadius);
 
-    // Start the game loop
-    gameLoop();
+    
+    displayStartGame();
 }
 
 canvas.addEventListener('click', () => {
