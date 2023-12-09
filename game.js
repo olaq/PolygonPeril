@@ -115,7 +115,7 @@ function calculateCirclePosition() {
     circleY = Math.random() * (canvas.height - 50);
 }
 
-function checkOverlap() {
+function checkOverlapRectangleCircle() {
     const dx = circleX - x;
     const dy = circleY - y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -176,11 +176,23 @@ function drawLives() {
 }
 
 function checkOverlapTriangleRectangle() {
-    const dx = x - triangleX;
-    const dy = y - triangleY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    // Represent the rectangle as a polygon
+    let rectangle = [
+        { x: x, y: y },
+        { x: x + squareSize, y: y },
+        { x: x + squareSize, y: y + squareSize },
+        { x: x, y: y + squareSize }
+    ];
 
-    if (distance < squareSize / 2 + 50) { // assuming the triangle has a size of 50
+    // Represent the triangle as a polygon
+    let triangle = [
+        { x: triangleX, y: triangleY },
+        { x: triangleX + 50, y: triangleY },
+        { x: triangleX + 25, y: triangleY + 50 }
+    ];
+
+    // Check if the rectangle and triangle overlap using SAT
+    if (polygonsOverlap(rectangle, triangle)) {
         // Reset the position of the rectangle to the center
         x = canvas.width / 2;
         y = canvas.height / 2;
@@ -194,6 +206,44 @@ function checkOverlapTriangleRectangle() {
     }
 }
 
+function getAxes(polygon) {
+    let axes = [];
+    for (let i = 0; i < polygon.length; i++) {
+        let p1 = polygon[i];
+        let p2 = polygon[i + 1 === polygon.length ? 0 : i + 1];
+        let edge = { x: p1.x - p2.x, y: p1.y - p2.y };
+        axes.push({ x: -edge.y, y: edge.x });
+    }
+    return axes;
+}
+
+function projectPolygon(axis, polygon) {
+    let min = axis.x * polygon[0].x + axis.y * polygon[0].y;
+    let max = min;
+    for (let i = 1; i < polygon.length; i++) {
+        let p = axis.x * polygon[i].x + axis.y * polygon[i].y;
+        if (p < min) {
+            min = p;
+        } else if (p > max) {
+            max = p;
+        }
+    }
+    return { min, max };
+}
+
+function polygonsOverlap(polygon1, polygon2) {
+    let axes = getAxes(polygon1).concat(getAxes(polygon2));
+    for (let i = 0; i < axes.length; i++) {
+        let axis = axes[i];
+        let projection1 = projectPolygon(axis, polygon1);
+        let projection2 = projectPolygon(axis, polygon2);
+        if (projection1.max < projection2.min || projection2.max < projection1.min) {
+            return false;
+        }
+    }
+    return true;
+}
+
 
 function displayText(ctx, text, x, y, color = 'white', fontSize = 20, align = 'center') {
     ctx.font = `${fontSize}px Arial`;
@@ -203,7 +253,7 @@ function displayText(ctx, text, x, y, color = 'white', fontSize = 20, align = 'c
 }
 
 function displayGameIntro(ctx) {
-    displayText(ctx, 'Polygon Peril', canvas.width / 2, canvas.height / 2 - 100, 'red', 50);
+    displayText(ctx, 'Polygon Peril', canvas.width / 2, canvas.height / 2 - 100, 'red', 70);
     displayText(ctx, 'Survive the Shape Shift!', canvas.width / 2, canvas.height / 2 - 50, 'red', 30);
     displayText(ctx, 'Click to play the game', canvas.width / 2, canvas.height / 2, 'red', 20);
 }
@@ -227,7 +277,6 @@ function gameLoop() {
 
     if (!gameStarted) {
         preapreBackground(ctx);
-
         displayGameIntro(ctx);
         displayInstructions(ctx);
     } else if (lives > 0) {
@@ -239,7 +288,7 @@ function gameLoop() {
         drawTriangle();
         drawLives();
         checkOverlapTriangleRectangle();
-        checkOverlap();
+        checkOverlapRectangleCircle();
         time++;
         requestAnimationFrame(gameLoop);
     } else {
