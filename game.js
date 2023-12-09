@@ -133,7 +133,7 @@ function drawCounter() {
     ctx.font = '20px Arial';
     ctx.fillStyle = 'grey';
     ctx.textAlign = 'right';
-    ctx.fillText(`Counter: ${counter}`, canvas.width - 10, 30);
+    ctx.fillText(`Points: ${counter}`, canvas.width - 10, 30);
 }
 
 function drawTriangle() {
@@ -195,25 +195,41 @@ function checkOverlapTriangleRectangle() {
 }
 
 
+function displayText(ctx, text, x, y, color = 'white', fontSize = 20, align = 'center') {
+    ctx.font = `${fontSize}px Arial`;
+    ctx.fillStyle = color;
+    ctx.textAlign = align;
+    ctx.fillText(text, x, y);
+}
 
+function displayGameIntro(ctx) {
+    displayText(ctx, 'Polygon Peril', canvas.width / 2, canvas.height / 2 - 100, 'red', 50);
+    displayText(ctx, 'Survive the Shape Shift!', canvas.width / 2, canvas.height / 2 - 50, 'red', 30);
+    displayText(ctx, 'Click to play the game', canvas.width / 2, canvas.height / 2, 'red', 20);
+}
+
+function displayInstructions(ctx) {
+    displayText(ctx, 'Instructions:', canvas.width / 2, canvas.height / 2 + 50);
+    displayText(ctx, '1. Avoid the triangle.', canvas.width / 2, canvas.height / 2 + 80);
+    displayText(ctx, '2. Collect the circles to gain points.', canvas.width / 2, canvas.height / 2 + 110);
+    displayText(ctx, '3. You have 3 lives. Good luck!', canvas.width / 2, canvas.height / 2 + 140);
+}
+
+function preapreBackground(ctx) {
+    // Fill the background with black color
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
 
 function gameLoop() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (!gameStarted) {
-        // Fill the background with black color
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.font = '50px Arial';
-        ctx.fillStyle = 'red';
-        ctx.textAlign = 'center';
-        ctx.fillText('Polygon Peril', canvas.width / 2, canvas.height / 2 - 50);
-        ctx.font = '30px Arial';
-        ctx.fillText('Survive the Shape Shift!', canvas.width / 2, canvas.height / 2);
-        ctx.font = '20px Arial';
-        ctx.fillText('Click to play the game', canvas.width / 2, canvas.height / 2 + 50);
+        preapreBackground(ctx);
+
+        displayGameIntro(ctx);
+        displayInstructions(ctx);
     } else if (lives > 0) {
         calculateRectanglePosition();
         drawPulsatingRectangle();
