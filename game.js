@@ -14,6 +14,9 @@ let x, y;
 let centeredX, centeredY
 let squareSize;
 let speed = 2; // Change this to make the rectangle move faster or slower
+let targetX = x;
+let targetY = y;
+let mouseDown = false;
 
 let circleX, circleY;
 
@@ -56,6 +59,23 @@ window.addEventListener('keyup', (event) => {
     }
 });
 
+canvas.addEventListener('mousedown', function() {
+    mouseDown = true;
+});
+
+canvas.addEventListener('mouseup', function() {
+    mouseDown = false;
+});
+
+canvas.addEventListener('mousemove', function(event) {
+    if (mouseDown) {
+        // Calculate the canvas-relative mouse coordinates
+        let rect = canvas.getBoundingClientRect();
+        targetX = event.clientX - rect.left;
+        targetY = event.clientY - rect.top;
+    }
+});
+
 function calculateRectanglePosition() {
     // Calculate the new position
     let newX = x;
@@ -64,6 +84,18 @@ function calculateRectanglePosition() {
     if (keys.ArrowDown) newY += speed;
     if (keys.ArrowLeft) newX -= speed;
     if (keys.ArrowRight) newX += speed;
+    if (mouseDown) {
+        // Calculate the direction vector
+        let dx = targetX - x;
+        let dy = targetY - y;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let directionX = dx / distance;
+        let directionY = dy / distance;
+
+        newX += directionX * speed;
+        newY += directionY * speed;
+    }
+    
 
     // Check if the new position is inside the canvas
     if (newX >= 0 + baseSize / 2 && newX <= canvas.width - baseSize / 2) {
