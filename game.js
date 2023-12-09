@@ -80,7 +80,7 @@ function calculateRectanglePosition() {
 }
 
 function drawPulsatingRectangle() {
-    squareSize = baseSize + amplitude * Math.sin(frequency * time) + counter * 10;
+    squareSize = baseSize + amplitude * Math.sin(frequency * time);
     const radius = 5; // Change this to change the roundness of the corners
 
     // Adjust the x and y coordinates so the rectangle stays centered around the given x and y
