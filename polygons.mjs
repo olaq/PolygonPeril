@@ -15,10 +15,10 @@ class Rectangle {
     // Method to calculate the polygon representation
     calculatePolygon() {
         return [
-            { x: this.x - this.width, y: this.y - this.height },
-            { x: this.x + this.width, y: this.y - this.height },
-            { x: this.x + this.width, y: this.y + this.height },
-            { x: this.x - this.width, y: this.y + this.height }
+            {x: this.x - this.width, y: this.y - this.height},
+            {x: this.x + this.width, y: this.y - this.height},
+            {x: this.x + this.width, y: this.y + this.height},
+            {x: this.x - this.width, y: this.y + this.height}
         ];
     }
 
@@ -45,9 +45,9 @@ class Triangle {
     // Method to calculate the polygon representation
     calculatePolygon() {
         return [
-            { x: this.x, y: this.y },
-            { x: this.x - 33, y: this.y + 66 },
-            { x: this.x + 33, y: this.y + 66 }
+            {x: this.x, y: this.y},
+            {x: this.x - 33, y: this.y + 66},
+            {x: this.x + 33, y: this.y + 66}
         ];
     }
 }
@@ -61,14 +61,32 @@ class Circle {
     }
 }
 
+class Hex {
+    constructor(x, y, color, radius) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = radius;
+    }
+
+    // Method to calculate the polygon representation
+    calculatePolygon() {
+        const polygon = [];
+        for (let i = 0; i < 6; i++) {
+            const angle = 2 * Math.PI / 6 * i;
+            polygon.push({x: this.x + this.radius * Math.cos(angle), y: this.y + this.radius * Math.sin(angle)});
+        }
+        return polygon;
+    }
+}
 
 function getAxes(polygon) {
     let axes = [];
     for (let i = 0; i < polygon.length; i++) {
         let p1 = polygon[i];
         let p2 = polygon[i + 1 === polygon.length ? 0 : i + 1];
-        let edge = { x: p1.x - p2.x, y: p1.y - p2.y };
-        axes.push({ x: -edge.y, y: edge.x });
+        let edge = {x: p1.x - p2.x, y: p1.y - p2.y};
+        axes.push({x: -edge.y, y: edge.x});
     }
     return axes;
 }
@@ -84,7 +102,7 @@ function projectPolygon(axis, polygon) {
             max = p;
         }
     }
-    return { min, max };
+    return {min, max};
 }
 
 function polygonsOverlap(polygon1, polygon2) {
@@ -116,6 +134,23 @@ function checkCollisionWithTriangle(triangleObj, rectangleObj) {
     let triangle = triangleObj.calculatePolygon();
 
     return polygonsOverlap(rectangle, triangle);
+}
+
+function checkCollisionWithHexes(hexesObj, rectangleObj) {
+    let collide = false
+    hexesObj.forEach(hex => {
+            if (checkCollisionWithHex(hex, rectangleObj)) {
+                collide = true;
+            }
+        }
+    );
+    return collide;
+}
+
+function checkCollisionWithHex(hexObj, rectangleObj) {
+    let rectangle = rectangleObj.calculatePolygon();
+    let hex = hexObj.calculatePolygon();
+    return polygonsOverlap(rectangle, hex);
 }
 
 function moveTriangles(trianglesObj, rectangleObj) {
@@ -151,6 +186,36 @@ function moveTriangle(triangleObj, rectangleObj) {
     }
 }
 
+function moveHexes(hexesObj, rectangleObj) {
+    hexesObj.forEach(hex => {
+        moveHex(hex, rectangleObj);
+    });
+}
+
+function moveHex(hexObj, rectangleObj) {
+    const dx = rectangleObj.x - hexObj.x;
+    const dy = rectangleObj.y - hexObj.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 0) {
+        const directionX = dx / distance;
+        const directionY = dy / distance;
+
+        // Calculate the fluctuation factor for the hex's speed
+        const speedFluctuationFactor = Math.random() * 0.4;
+
+        // Fluctuate the speed
+        const hexSpeed = 0.5 * speedFluctuationFactor;
+
+        // Fluctuate the direction of the hex's movement with sinus
+        const newDirectionX = directionX + Math.sin(new Date().getTime() * 0.001) * 5;
+        const newDirectionY = directionY + Math.cos(new Date().getTime() * 0.001) * 5;
+
+        hexObj.x = hexObj.x + newDirectionX * hexSpeed;
+        hexObj.y = hexObj.y + newDirectionY * hexSpeed;
+    }
+}
+
 function checkCollisionWithCircle(circleObj, rectangleObj) {
     const dx = circleObj.x - rectangleObj.x;
     const dy = circleObj.y - rectangleObj.y;
@@ -159,7 +224,7 @@ function checkCollisionWithCircle(circleObj, rectangleObj) {
     return distance < circleObj.radius + rectangleObj.width;
 }
 
-function resetTrianglesPositions(trianglesObj,triangleEdgeMargin) {
+function resetTrianglesPositions(trianglesObj, triangleEdgeMargin) {
     trianglesObj.forEach(triangle => {
         triangle.x = randomSideX(triangleEdgeMargin);
         triangle.y = randomSideY(triangleEdgeMargin);

@@ -43,6 +43,18 @@ function displayLifeLostMessage(ctx, lives) {
     displayText(ctx, 'Lives left: ' + livesText, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
 }
 
+function displayDangerIncreaseMessage(ctx) {
+    displayText(ctx, 'Danger increased!', canvas.width / 2, canvas.height / 2, triangleColor, 20);
+}
+
+function displayNewObstacleMessage(ctx) {
+    displayText(ctx, 'New obstacle!', canvas.width / 2, canvas.height / 2, hexColor, 20);
+}
+
+// function displayLevelUpMessage(ctx) {
+//     displayText(ctx, 'Level up!', canvas.width / 2, canvas.height / 2, 'green', 20);
+// }
+
 function displayGameOver() {
     displayText(ctx, 'GAME OVER', canvas.width / 2, canvas.height / 2, 'red', 50);
     displayText(ctx, `Points: ${counter}`, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);

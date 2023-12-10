@@ -24,6 +24,27 @@ function drawTriangles(ctx, trianglesObj) {
     });
 }
 
+function drawHexes(ctx, hexesObj) {
+    hexesObj.forEach(hex => {
+        drawHex(ctx, hex);
+    });
+}
+
+function drawHex(ctx, hexObj) {
+    let hex = hexObj.calculatePolygon();
+    ctx.beginPath();
+    ctx.moveTo(hex[0].x, hex[0].y);
+    ctx.lineTo(hex[1].x, hex[1].y);
+    ctx.lineTo(hex[2].x, hex[2].y);
+    ctx.lineTo(hex[3].x, hex[3].y);
+    ctx.lineTo(hex[4].x, hex[4].y);
+    ctx.lineTo(hex[5].x, hex[5].y);
+    ctx.closePath();
+    ctx.fillStyle = hexObj.color;
+    ctx.fill();
+
+}
+
 function drawTriangle(ctx, triangleObj) {
     let triangle = triangleObj.calculatePolygon();
     ctx.beginPath();

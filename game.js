@@ -6,24 +6,29 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const version = '0.0.7';
+const version = '0.0.8';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
 const circleRadius = 10; // Change this to change the size of the circle
+const hexRadius = 40; // Change this to change the size of the hex
 const rectangleSpeed = 2; // Change this to make the rectangle move faster or slower
 
 const rectangleColor = '#307bad'; // Solarized pastel blue
 const triangleColor = '#c94a48'; // Solarized red
 const circleColor = '#76bd52'; // Solarized green
+const hexColor = '#e3ab73'; // Solarized green
 
 const circleEdgeMargin = 50; // The circle will not spawn in that number of pixels from the canvas
 const triangleEdgeMargin = 70; // The triangle will not spawn in that number of pixels from the canvas
+const hexEdgeMargin = 50; // The hex will not spawn in that number of pixels from the canvas
+
 
 // polygons
-let trianglesObj = [];
 let rectangleObj;
 let circleObj;
+let trianglesObj = [];
+let hexesObj = [];
 
 // game variables
 let counter = 0;
@@ -31,6 +36,8 @@ let lives = 3;
 let gameRunning = false;
 let gameOverMessageFlag = false;
 let lifeLostMessageFlag = false;
+let dangerIncreaseMessageFlag = false;
+let newObstacleMessageFlag = false;
 
 // FPS counter
 const fpsCounter = new FPSCounter();
@@ -136,50 +143,88 @@ function calculateRectanglePosition() {
     rectangleObj.update();
 }
 
+function showMessages() {
+    if (lifeLostMessageFlag) {
+        displayLifeLostMessage(ctx, lives);
+    }
+    if (dangerIncreaseMessageFlag) {
+        displayDangerIncreaseMessage(ctx);
+    }
+    if (newObstacleMessageFlag) {
+        displayNewObstacleMessage(ctx, counter);
+    }
+}
 
 function updateGame() {
     calculateRectanglePosition();
     moveTriangles(trianglesObj, rectangleObj);
+    moveHexes(hexesObj, rectangleObj);
 
     drawRectangle(ctx, rectangleObj);
     drawCircle(ctx, circleObj);
     drawTriangles(ctx, trianglesObj);
+    drawHexes(ctx, hexesObj);
 
     displayCounter(ctx, counter);
     displayLives(ctx, lives);
     displayFps(ctx, fpsCounter.calculateFPS());
 
     if(checkCollisionWithCircle(circleObj, rectangleObj)) {
-        // Increase the counter
-        counter++;
-
-        if (counter % 5 === 0) {
-            // Add a new triangle to the triangles array
-            trianglesObj.push(newRandomTriangle());
-        }
-
-        // Move the circle to a new random position
-        circleObj = newRandomCircle();
+        growUp();
     }
-    if (checkCollisionWithTriangles(trianglesObj, rectangleObj)) {
+    if (checkCollisionWithTriangles(trianglesObj, rectangleObj)
+        || checkCollisionWithHexes(hexesObj, rectangleObj)) {
         lostLife();
     }
+
+    showMessages();
 }
 
 function lostLife() {
     lives--;
     lifeLostMessageFlag = true
     resetTrianglesPositions(trianglesObj);
+    resetHexPositions(hexesObj);
     resetRectanglePosition();
     setTimeout(() => {
         lifeLostMessageFlag = false;
     }, 900);
 }
 
+function growUp() {
+    counter++;
+
+    if (counter % 5 === 0) {
+        if (counter % 15 === 0) {
+            hexesObj.push(newRandomHex());
+            newObstacleMessageFlag = true
+            setTimeout(() => {
+                newObstacleMessageFlag = false;
+            }, 900);
+        } else {
+            trianglesObj.push(newRandomTriangle());
+            dangerIncreaseMessageFlag = true
+            setTimeout(() => {
+                dangerIncreaseMessageFlag = false;
+            }, 900);
+        }
+    }
+
+    // Move the circle to a new random position
+    circleObj = newRandomCircle();
+}
+
 function resetTrianglesPositions(trianglesObj) {
     trianglesObj.forEach(triangle => {
         triangle.x = randomSideX(triangleEdgeMargin);
         triangle.y = randomSideY(triangleEdgeMargin);
+    });
+}
+
+function resetHexPositions(hexesObj) {
+    hexesObj.forEach(hex => {
+        hex.x = randomSideX(hexEdgeMargin);
+        hex.y = randomSideY(hexEdgeMargin);
     });
 }
 
@@ -202,6 +247,12 @@ function newRandomCircle() {
     return new Circle(circleX, circleY, circleRadius, circleColor);
 }
 
+function newRandomHex() {
+    let hexX = Math.random() * (canvas.width - hexEdgeMargin);
+    let hexY = Math.random() * (canvas.height - hexEdgeMargin);
+    return new Hex(hexX, hexY, hexColor, hexRadius);
+}
+
 function newCenteredRectangle() {
     let centeredX = canvas.width / 2;
     let centeredY = canvas.height / 2;
@@ -221,9 +272,6 @@ function gameLoop() {
         displayStartGame();
     } else if (lives > 0) {
         updateGame();
-        if (lifeLostMessageFlag) {
-            displayLifeLostMessage(ctx, lives);
-        }
         requestAnimationFrame(gameLoop);
     } else {
         executeGameOver();
@@ -265,6 +313,7 @@ function resetGameState() {
     trianglesObj = [];
     trianglesObj.push(newRandomTriangle());
     circleObj = newRandomCircle();
+    hexesObj = [];
 
     counter = 0;
     lives = 3;
