@@ -99,3 +99,69 @@ function polygonsOverlap(polygon1, polygon2) {
     }
     return true;
 }
+
+function checkCollisionWithTriangles(trianglesObj, rectangleObj) {
+    let collide = false
+    trianglesObj.forEach(triangle => {
+        if (checkCollisionWithTriangle(triangle, rectangleObj)) {
+            collide = true;
+        }
+    });
+    return collide;
+}
+
+function checkCollisionWithTriangle(triangleObj, rectangleObj) {
+
+    let rectangle = rectangleObj.calculatePolygon();
+    let triangle = triangleObj.calculatePolygon();
+
+    return polygonsOverlap(rectangle, triangle);
+}
+
+function moveTriangles(trianglesObj, rectangleObj) {
+    trianglesObj.forEach(triangle => {
+        moveTriangle(triangle, rectangleObj);
+    });
+}
+
+function moveTriangle(triangleObj, rectangleObj) {
+    const dx = rectangleObj.x - triangleObj.x;
+    const dy = rectangleObj.y - triangleObj.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 0) {
+        const directionX = dx / distance;
+        const directionY = dy / distance;
+
+        // Calculate the fluctuation factor for the triangle's speed
+        const speedFluctuationFactor = Math.random() * 0.4 + 0.9;
+
+        // Calculate the fluctuation factor for the triangle's direction
+        const directionFluctuationFactor = Math.random() * 0.7 - 0.1;
+
+        // Increase the speed of the triangle with the counter and fluctuation factor
+        const triangleSpeed = (0.2 + counter * 0.03) * speedFluctuationFactor;
+
+        // Fluctuate the direction of the triangle's movement
+        const newDirectionX = directionX + directionFluctuationFactor;
+        const newDirectionY = directionY + directionFluctuationFactor;
+
+        triangleObj.x = triangleObj.x + newDirectionX * triangleSpeed;
+        triangleObj.y = triangleObj.y + newDirectionY * triangleSpeed;
+    }
+}
+
+function checkCollisionWithCircle(circleObj, rectangleObj) {
+    const dx = circleObj.x - rectangleObj.x;
+    const dy = circleObj.y - rectangleObj.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    return distance < circleObj.radius + rectangleObj.width;
+}
+
+function resetTrianglesPositions(trianglesObj,triangleEdgeMargin) {
+    trianglesObj.forEach(triangle => {
+        triangle.x = randomSideX(triangleEdgeMargin);
+        triangle.y = randomSideY(triangleEdgeMargin);
+    });
+}

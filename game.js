@@ -1,10 +1,12 @@
+
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const version = '0.0.6';
+const version = '0.0.7';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
@@ -134,32 +136,20 @@ function calculateRectanglePosition() {
     rectangleObj.update();
 }
 
-function drawRectangle() {
-    let rectangle = rectangleObj.calculatePolygon();
 
-    ctx.fillStyle = rectangleObj.color;
-    ctx.beginPath();
-    ctx.moveTo(rectangle[0].x, rectangle[0].y);
-    ctx.lineTo(rectangle[1].x, rectangle[1].y);
-    ctx.lineTo(rectangle[2].x, rectangle[2].y);
-    ctx.lineTo(rectangle[3].x, rectangle[3].y);
-    ctx.closePath();
-    ctx.fill();
-}
+function updateGame() {
+    calculateRectanglePosition();
+    moveTriangles(trianglesObj, rectangleObj);
 
-function drawCircle() {
-    ctx.beginPath();
-    ctx.arc(circleObj.x, circleObj.y, circleObj.radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = circleObj.color;
-    ctx.fill();
-}
+    drawRectangle(ctx, rectangleObj);
+    drawCircle(ctx, circleObj);
+    drawTriangles(ctx, trianglesObj);
 
-function checkCollisionWithCircle() {
-    const dx = circleObj.x - rectangleObj.x;
-    const dy = circleObj.y - rectangleObj.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    displayCounter(ctx, counter);
+    displayLives(ctx, lives);
+    displayFps(ctx, fpsCounter.calculateFPS());
 
-    if (distance < circleObj.radius + baseSize) {
+    if(checkCollisionWithCircle(circleObj, rectangleObj)) {
         // Increase the counter
         counter++;
 
@@ -171,147 +161,22 @@ function checkCollisionWithCircle() {
         // Move the circle to a new random position
         circleObj = newRandomCircle();
     }
-}
-
-function drawTriangles() {
-    trianglesObj.forEach(triangle => {
-        drawTriangle(triangle);
-    });
-}
-
-function drawTriangle(triangleObj) {
-    let triangle = triangleObj.calculatePolygon();
-    ctx.beginPath();
-    ctx.moveTo(triangle[0].x, triangle[0].y);
-    ctx.lineTo(triangle[1].x, triangle[1].y);
-    ctx.lineTo(triangle[2].x, triangle[2].y);
-    ctx.closePath();
-    ctx.fillStyle = triangleObj.color;
-    ctx.fill();
-}
-
-function moveTriangles() {
-    trianglesObj.forEach(triangle => {
-        moveTriangle(triangle);
-    });
-}
-
-function moveTriangle(triangleObj) {
-    const dx = rectangleObj.x - triangleObj.x;
-    const dy = rectangleObj.y - triangleObj.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance > 0) {
-        const directionX = dx / distance;
-        const directionY = dy / distance;
-
-        // Calculate the fluctuation factor for the triangle's speed
-        const speedFluctuationFactor = Math.random() * 0.4 + 0.9;
-
-        // Calculate the fluctuation factor for the triangle's direction
-        const directionFluctuationFactor = Math.random() * 0.7 - 0.1;
-
-        // Increase the speed of the triangle with the counter and fluctuation factor
-        const triangleSpeed = (0.2 + counter * 0.03) * speedFluctuationFactor;
-
-        // Fluctuate the direction of the triangle's movement
-        const newDirectionX = directionX + directionFluctuationFactor;
-        const newDirectionY = directionY + directionFluctuationFactor;
-
-        triangleObj.x = triangleObj.x + newDirectionX * triangleSpeed;
-        triangleObj.y = triangleObj.y + newDirectionY * triangleSpeed;
-    }
-}
-
-function checkCollisionWithTriangles() {
-    trianglesObj.forEach(triangle => {
-        checkCollisionWithTriangle(triangle);
-    });
-}
-
-function checkCollisionWithTriangle(triangleObj) {
-
-    let rectangle = rectangleObj.calculatePolygon();
-    let triangle = triangleObj.calculatePolygon();
-
-    if (polygonsOverlap(rectangle, triangle)) {
+    if (checkCollisionWithTriangles(trianglesObj, rectangleObj)) {
         lostLife();
     }
-}
-
-function displayCounter() {
-    displayText(ctx, `Points: ${counter}`, canvas.width - 10, 30, 'grey', 20, 'right')
-}
-
-function displayLives() {
-    let livesText = '';
-    for (let i = 0; i < lives; i++) {
-        livesText += '\u2764 ';
-    }
-    displayText(ctx, livesText, 10, 30, 'red', 20, 'left');
-}
-
-function displayFps() {
-    displayText(ctx, 'FPS: ' + fpsCounter.calculateFPS(), 10, canvas.height - 15, 'grey', 14, 'left');
-}
-
-function displayGameIntro(ctx) {
-    displayText(ctx, 'Polygon Peril', canvas.width / 2, canvas.height / 2 - 150, 'red', 70);
-    displayText(ctx, 'Survive the Shape Shift!', canvas.width / 2, canvas.height / 2 - 100, 'red', 30);
-    displayText(ctx, 'Click to play the game', canvas.width / 2, canvas.height / 2, 'red', 20);
-    displayText(ctx, 'https://github.com/olaq/PolygonPeril', 10, canvas.height - 15, 'darkgrey', 15, 'left');
-}
-
-function displayInstructions(ctx) {
-    displayText(ctx, 'Instructions:', canvas.width / 2, canvas.height / 2 + 100, 'lightgrey', 20);
-    displayText(ctx, '1. Avoid the triangles.', canvas.width / 2, canvas.height / 2 + 130, 'lightgrey');
-    displayText(ctx, '2. Collect the circles to gain points.', canvas.width / 2, canvas.height / 2 + 160, 'lightgrey');
-    displayText(ctx, '3. You have 3 lives. Good luck!', canvas.width / 2, canvas.height / 2 + 190, 'lightgrey');
-}
-
-function displayVersion(ctx) {
-    displayText(ctx, version, canvas.width - 10, canvas.height - 15, 'grey', 14, 'right');
-}
-
-
-function updateGame() {
-    calculateRectanglePosition();
-    moveTriangles();
-
-    drawRectangle();
-    drawCircle();
-    drawTriangles();
-
-    displayCounter();
-    displayLives();
-    displayFps();
-
-    checkCollisionWithCircle();
-    checkCollisionWithTriangles();
 }
 
 function lostLife() {
     lives--;
     lifeLostMessageFlag = true
-    resetTrianglesPositions();
+    resetTrianglesPositions(trianglesObj);
     resetRectanglePosition();
     setTimeout(() => {
         lifeLostMessageFlag = false;
     }, 900);
 }
 
-function displayLifeLostMessage() {
-    displayText(ctx, 'You died!', canvas.width / 2, canvas.height / 2, 'red', 50);
-    // display number of lives left
-    let livesText = '';
-    for (let i = 0; i < lives; i++) {
-        livesText += '\u2764 ';
-    }
-    displayText(ctx, 'Lives left: ' + livesText, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
-
-}
-
-function resetTrianglesPositions() {
+function resetTrianglesPositions(trianglesObj) {
     trianglesObj.forEach(triangle => {
         triangle.x = randomSideX(triangleEdgeMargin);
         triangle.y = randomSideY(triangleEdgeMargin);
@@ -330,6 +195,25 @@ function resetRectanglePosition() {
     rectangleObj = newCenteredRectangle();
 }
 
+
+function newRandomCircle() {
+    let circleX = Math.random() * (canvas.width - circleEdgeMargin);
+    let circleY = Math.random() * (canvas.height - circleEdgeMargin);
+    return new Circle(circleX, circleY, circleRadius, circleColor);
+}
+
+function newCenteredRectangle() {
+    let centeredX = canvas.width / 2;
+    let centeredY = canvas.height / 2;
+    return new Rectangle(centeredX, centeredY, baseSize, baseSize, rectangleColor);
+}
+
+function newRandomTriangle() {
+    const triangleX = randomSideX(triangleEdgeMargin);
+    const triangleY = randomSideY(triangleEdgeMargin);
+    return new Triangle(triangleX, triangleY, triangleColor);
+}
+
 function gameLoop() {
     clearCanvas();
 
@@ -338,7 +222,7 @@ function gameLoop() {
     } else if (lives > 0) {
         updateGame();
         if (lifeLostMessageFlag) {
-            displayLifeLostMessage();
+            displayLifeLostMessage(ctx, lives);
         }
         requestAnimationFrame(gameLoop);
     } else {
@@ -376,34 +260,6 @@ function displayStartGame() {
     displayVersion(ctx);
 }
 
-function displayGameOver() {
-    displayText(ctx, 'GAME OVER', canvas.width / 2, canvas.height / 2, 'red', 50);
-    displayText(ctx, `Points: ${counter}`, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
-}
-
-window.onload = function () {
-    resetGameState();
-    gameLoop();
-}
-
-function newRandomCircle() {
-    let circleX = Math.random() * (canvas.width - circleEdgeMargin);
-    let circleY = Math.random() * (canvas.height - circleEdgeMargin);
-    return new Circle(circleX, circleY, circleRadius, circleColor);
-}
-
-function newCenteredRectangle() {
-    let centeredX = canvas.width / 2;
-    let centeredY = canvas.height / 2;
-    return new Rectangle(centeredX, centeredY, baseSize, baseSize, rectangleColor);
-}
-
-function newRandomTriangle() {
-    const triangleX = randomSideX(triangleEdgeMargin);
-    const triangleY = randomSideY(triangleEdgeMargin);
-    return new Triangle(triangleX, triangleY, triangleColor);
-}
-
 function resetGameState() {
     rectangleObj = newCenteredRectangle();
     trianglesObj = [];
@@ -414,3 +270,9 @@ function resetGameState() {
     lives = 3;
     gameRunning = false;
 }
+
+window.onload = function () {
+    resetGameState();
+    gameLoop();
+}
+
