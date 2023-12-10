@@ -1,25 +1,26 @@
-
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const version = '0.0.8';
+const version = '0.0.9';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
 const circleRadius = 10; // Change this to change the size of the circle
+const specialCircleRadius = 13; // Change this to change the size of the special circle
 const hexRadius = 40; // Change this to change the size of the hex
 const rectangleSpeed = 2; // Change this to make the rectangle move faster or slower
+const minimumSpawnDistance = 80; // The villains will not spawn in that number of pixels from the rectangle
 
 const rectangleColor = '#307bad'; // Solarized pastel blue
 const triangleColor = '#c94a48'; // Solarized red
 const circleColor = '#76bd52'; // Solarized green
+const specialCircleColor = '#e5aa19'; // gold
 const hexColor = '#e3ab73'; // Solarized green
 
-const circleEdgeMargin = 50; // The circle will not spawn in that number of pixels from the canvas
+const circleEdgeMargin = 60; // The circle will not spawn in that number of pixels from the canvas
 const triangleEdgeMargin = 70; // The triangle will not spawn in that number of pixels from the canvas
 const hexEdgeMargin = 50; // The hex will not spawn in that number of pixels from the canvas
 
@@ -29,15 +30,19 @@ let rectangleObj;
 let circleObj;
 let trianglesObj = [];
 let hexesObj = [];
+let heartObj;
 
 // game variables
 let counter = 0;
 let lives = 3;
+let level = 1;
 let gameRunning = false;
 let gameOverMessageFlag = false;
 let lifeLostMessageFlag = false;
 let dangerIncreaseMessageFlag = false;
 let newObstacleMessageFlag = false;
+let levelUpMessageFlag = false;
+let newLifeMessageFlag = false;
 
 // FPS counter
 const fpsCounter = new FPSCounter();
@@ -114,6 +119,7 @@ canvas.addEventListener('touchend', function () {
 }, false);
 
 function calculateRectanglePosition() {
+    speed = rectangleSpeed + 0.1 * level;
     let newX = rectangleObj.x
     let newY = rectangleObj.y
 
@@ -125,13 +131,12 @@ function calculateRectanglePosition() {
         let directionX = dx / distance;
         let directionY = dy / distance;
 
-        newX += directionX * rectangleSpeed;
-        newY += directionY * rectangleSpeed;
-    }
-    else if (keys.ArrowUp || keys.w || keys.W) newY -= rectangleSpeed;
-    else if (keys.ArrowDown || keys.s || keys.S) newY += rectangleSpeed;
-    else if (keys.ArrowLeft || keys.a || keys.A) newX -= rectangleSpeed;
-    else if (keys.ArrowRight || keys.d || keys.D) newX += rectangleSpeed;
+        newX += directionX * speed;
+        newY += directionY * speed;
+    } else if (keys.ArrowUp || keys.w || keys.W) newY -= speed;
+    else if (keys.ArrowDown || keys.s || keys.S) newY += speed;
+    else if (keys.ArrowLeft || keys.a || keys.A) newX -= speed;
+    else if (keys.ArrowRight || keys.d || keys.D) newX += speed;
 
     // Check if the new position is inside the canvas
     if (newX >= baseSize / 2 && newX <= canvas.width - baseSize / 2) {
@@ -153,6 +158,29 @@ function showMessages() {
     if (newObstacleMessageFlag) {
         displayNewObstacleMessage(ctx, counter);
     }
+    if (levelUpMessageFlag) {
+        displayLevelUpMessage(ctx, counter);
+    }
+    if (newLifeMessageFlag) {
+        displayNewLifeMessage(ctx);
+    }
+}
+
+function levelUp() {
+    level++;
+    levelUpMessageFlag = true
+    setTimeout(() => {
+        levelUpMessageFlag = false;
+    }, 900);
+}
+
+function newLife() {
+    lives++;
+    heartObj = null;
+    newLifeMessageFlag = true
+    setTimeout(() => {
+        newLifeMessageFlag = false;
+    }, 900);
 }
 
 function updateGame() {
@@ -164,17 +192,25 @@ function updateGame() {
     drawCircle(ctx, circleObj);
     drawTriangles(ctx, trianglesObj);
     drawHexes(ctx, hexesObj);
+    drawHeart(ctx, heartObj);
 
     displayCounter(ctx, counter);
     displayLives(ctx, lives);
     displayFps(ctx, fpsCounter.calculateFPS());
 
-    if(checkCollisionWithCircle(circleObj, rectangleObj)) {
-        growUp();
+    if (checkCollisionWithCircle(circleObj, rectangleObj)) {
+        if (circleObj.special === true) {
+            levelUp();
+        }
+        nextPhase();
     }
     if (checkCollisionWithTriangles(trianglesObj, rectangleObj)
         || checkCollisionWithHexes(hexesObj, rectangleObj)) {
         lostLife();
+    }
+
+    if (checkCollisionWithHeart(heartObj, rectangleObj)) {
+        newLife();
     }
 
     showMessages();
@@ -191,7 +227,7 @@ function lostLife() {
     }, 900);
 }
 
-function growUp() {
+function nextPhase() {
     counter++;
 
     if (counter % 5 === 0) {
@@ -210,8 +246,15 @@ function growUp() {
         }
     }
 
-    // Move the circle to a new random position
-    circleObj = newRandomCircle();
+    if (counter % 1 === 0) {
+        circleObj = newRandomCircleSpecial(rectangleObj);
+    } else {
+        circleObj = newRandomCircle(rectangleObj);
+    }
+
+    if (counter % 1 === 0) { // for testing
+        heartObj = newRandomHeart(rectangleObj);
+    }
 }
 
 function resetTrianglesPositions(trianglesObj) {
@@ -240,11 +283,40 @@ function resetRectanglePosition() {
     rectangleObj = newCenteredRectangle();
 }
 
-
-function newRandomCircle() {
+function randomCircleX(rectangleObj) {
     let circleX = Math.random() * (canvas.width - circleEdgeMargin);
+    while (circleX > rectangleObj.x - minimumSpawnDistance && circleX < rectangleObj.x + minimumSpawnDistance) {
+        console.log('Retrying due to close spawn: circleX', circleX, 'rectangleObj.x', rectangleObj.x)
+        circleX = Math.random() * (canvas.width - circleEdgeMargin);
+    }
+    return circleX;
+}
+
+function randomCircleY(rectangleObj) {
     let circleY = Math.random() * (canvas.height - circleEdgeMargin);
+    while (circleY > rectangleObj.y - minimumSpawnDistance && circleY < rectangleObj.y + minimumSpawnDistance) {
+        console.log('Retrying due to close spawn: circleY', circleY, 'rectangleObj.y', rectangleObj.y)
+        circleY = Math.random() * (canvas.height - circleEdgeMargin);
+    }
+    return circleY;
+}
+
+function newRandomCircle(rectangleObj) {
+    let circleX = randomCircleX(rectangleObj);
+    let circleY = randomCircleY(rectangleObj);
     return new Circle(circleX, circleY, circleRadius, circleColor);
+}
+
+function newRandomCircleSpecial(rectangleObj) {
+    let circleX = randomCircleX(rectangleObj);
+    let circleY = randomCircleY(rectangleObj);
+    return new Circle(circleX, circleY, specialCircleRadius, specialCircleColor, true);
+}
+
+function newRandomHeart(rectangleObj) {
+    let heartX = randomCircleX(rectangleObj);
+    let heartY = randomCircleX(rectangleObj);
+    return new Heart(heartX, heartY, circleRadius);
 }
 
 function newRandomHex() {
@@ -298,7 +370,7 @@ function executeGameOver() {
         canvas.addEventListener('click', function () {
             resetGameState();
             gameLoop();
-        }, { once: true });
+        }, {once: true});
     }, 1000);
 }
 
@@ -311,12 +383,13 @@ function displayStartGame() {
 function resetGameState() {
     rectangleObj = newCenteredRectangle();
     trianglesObj = [];
-    trianglesObj.push(newRandomTriangle());
-    circleObj = newRandomCircle();
+    trianglesObj.push(newRandomTriangle(rectangleObj));
+    circleObj = newRandomCircle(rectangleObj);
     hexesObj = [];
 
     counter = 0;
     lives = 3;
+    level = 1;
     gameRunning = false;
 }
 

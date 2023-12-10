@@ -53,11 +53,20 @@ class Triangle {
 }
 
 class Circle {
-    constructor(x, y, radius, color) {
+    constructor(x, y, radius, color, special = false) {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.color = color;
+        this.special = special;
+    }
+}
+
+class Heart {
+    constructor(x, y, radius) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
     }
 }
 
@@ -116,6 +125,17 @@ function polygonsOverlap(polygon1, polygon2) {
         }
     }
     return true;
+}
+
+function checkCollisionWithHeart(heartObj, rectangleObj) {
+    if (heartObj == null) {
+        return false;
+    }
+    const dx = heartObj.x - rectangleObj.x;
+    const dy = heartObj.y - rectangleObj.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    return distance < heartObj.radius + rectangleObj.width;
 }
 
 function checkCollisionWithTriangles(trianglesObj, rectangleObj) {

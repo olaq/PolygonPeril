@@ -42,7 +42,26 @@ function drawHex(ctx, hexObj) {
     ctx.closePath();
     ctx.fillStyle = hexObj.color;
     ctx.fill();
+}
 
+function drawHeart(ctx, heartObj) {
+    if (heartObj == null) {
+        return;
+    }
+
+    // Calculate the pulsation scale based on time
+    const pulsationScale = Math.abs(Math.sin(Date.now() * 0.005));
+
+    // Calculate the size of the heart based on the pulsation scale
+    const heartSize = heartObj.radius + (pulsationScale * 15);
+
+    // Draw the pulsating heart
+    ctx.font = `${heartSize}px Arial`;
+    ctx.fillStyle = 'red';
+    ctx.fillText('\u2764', heartObj.x - (heartSize / 2), heartObj.y + (heartSize / 2));
+
+    // // Request the next animation frame
+    // requestAnimationFrame(() => drawHeart(ctx, heartObj));
 }
 
 function drawTriangle(ctx, triangleObj) {

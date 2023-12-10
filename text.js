@@ -1,4 +1,3 @@
-
 function displayCounter(ctx, counter) {
     displayText(ctx, `Points: ${counter}`, canvas.width - 10, 30, 'grey', 20, 'right')
 }
@@ -24,8 +23,8 @@ function displayGameIntro(ctx) {
 
 function displayInstructions(ctx) {
     displayText(ctx, 'Instructions:', canvas.width / 2, canvas.height / 2 + 100, 'lightgrey', 20);
-    displayText(ctx, '1. Avoid the triangles.', canvas.width / 2, canvas.height / 2 + 130, 'lightgrey');
-    displayText(ctx, '2. Collect the circles to gain points.', canvas.width / 2, canvas.height / 2 + 160, 'lightgrey');
+    displayText(ctx, '1. Avoid the pointy ones.', canvas.width / 2, canvas.height / 2 + 130, 'lightgrey');
+    displayText(ctx, '2. Collect the rounded ones.', canvas.width / 2, canvas.height / 2 + 160, 'lightgrey');
     displayText(ctx, '3. You have 3 lives. Good luck!', canvas.width / 2, canvas.height / 2 + 190, 'lightgrey');
 }
 
@@ -43,17 +42,21 @@ function displayLifeLostMessage(ctx, lives) {
     displayText(ctx, 'Lives left: ' + livesText, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
 }
 
+function displayNewLifeMessage(ctx) {
+    displayText(ctx, 'New life!', canvas.width / 2, canvas.height / 2 - 150, circleColor, 20);
+}
+
+function displayLevelUpMessage(ctx) {
+    displayText(ctx, 'Level up!', canvas.width / 2, canvas.height / 2 - 120, specialCircleColor, 20);
+}
+
 function displayDangerIncreaseMessage(ctx) {
-    displayText(ctx, 'Danger increased!', canvas.width / 2, canvas.height / 2, triangleColor, 20);
+    displayText(ctx, 'Danger increased!', canvas.width / 2, canvas.height / 2 - 90, triangleColor, 20);
 }
 
 function displayNewObstacleMessage(ctx) {
-    displayText(ctx, 'New obstacle!', canvas.width / 2, canvas.height / 2, hexColor, 20);
+    displayText(ctx, 'New obstacle!', canvas.width / 2, canvas.height / 2 - 60, hexColor, 20);
 }
-
-// function displayLevelUpMessage(ctx) {
-//     displayText(ctx, 'Level up!', canvas.width / 2, canvas.height / 2, 'green', 20);
-// }
 
 function displayGameOver() {
     displayText(ctx, 'GAME OVER', canvas.width / 2, canvas.height / 2, 'red', 50);
