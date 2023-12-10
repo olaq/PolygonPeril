@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const version = '0.0.1';
+const version = '0.0.2';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
@@ -12,6 +12,10 @@ const amplitude = 5; // Change this to make the pulsating effect more or less pr
 const frequency = 0.02; // Change this to make the pulsating effect faster or slower
 const circleRadius = 10; // Change this to change the size of the circle
 const rectangleSpeed = 2; // Change this to make the rectangle move faster or slower
+
+const rectangleColor = '#b58900'; // Solarized pastel blue
+const triangleColor = '#dc322f'; // Solarized red
+const circleColor = 'lime'; 
 
 // polygons
 let triangleObj;
@@ -123,6 +127,7 @@ function calculateRectanglePosition() {
     if (newY >= 0 + baseSize / 2 && newY <= canvas.height - baseSize / 2) {
         rectangleObj.y = newY;
     }
+    rectangleObj.update();
 }
 
 function drawRectangle() {
@@ -141,7 +146,7 @@ function drawRectangle() {
 function drawCircle() {
     ctx.beginPath();
     ctx.arc(circleObj.x, circleObj.y, circleObj.radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = 'green';
+    ctx.fillStyle = circleObj.color;
     ctx.fill();
 }
 
@@ -171,7 +176,7 @@ function drawTriangle() {
     ctx.lineTo(triangle[1].x, triangle[1].y);
     ctx.lineTo(triangle[2].x, triangle[2].y);
     ctx.closePath();
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = triangleObj.color;
     ctx.fill();
 }
 
@@ -368,9 +373,9 @@ window.onload = function () {
     let triangleY = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
 
 
-    rectangleObj = new Rectangle(x, y, baseSize, baseSize);
-    triangleObj = new Triangle(triangleX, triangleY);
-    circleObj = new Circle(circleX, circleY, circleRadius);
+    rectangleObj = new Rectangle(x, y, baseSize, baseSize, rectangleColor);
+    triangleObj = new Triangle(triangleX, triangleY, triangleColor);
+    circleObj = new Circle(circleX, circleY, circleRadius, circleColor);
 
 
     displayStartGame();
@@ -402,9 +407,9 @@ canvas.addEventListener('click', function () {
         let triangleX = Math.random() * (canvas.width - 50);
         let triangleY = Math.random() * (canvas.height - 50);
 
-        rectangleObj = new Rectangle(x, y, baseSize, baseSize);
-        triangleObj = new Triangle(triangleX, triangleY);
-        circleObj = new Circle(circleX, circleY, circleRadius);
+        rectangleObj = new Rectangle(x, y, baseSize, baseSize, rectangleColor);
+        triangleObj = new Triangle(triangleX, triangleY, triangleColor);
+        circleObj = new Circle(circleX, circleY, circleRadius, circleColor);
 
         counter = 0;
         lives = 3;
