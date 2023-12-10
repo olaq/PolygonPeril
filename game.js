@@ -208,11 +208,21 @@ function moveTriangle(triangleObj) {
         const directionX = dx / distance;
         const directionY = dy / distance;
 
-        // Increase the speed of the triangle with the counter
-        const triangleSpeed = 0.2 + counter * 0.03;
+        // Calculate the fluctuation factor for the triangle's speed
+        const speedFluctuationFactor = Math.random() * 0.4 + 0.9;
 
-        triangleObj.x = triangleObj.x + directionX * triangleSpeed;
-        triangleObj.y = triangleObj.y + directionY * triangleSpeed;
+        // Calculate the fluctuation factor for the triangle's direction
+        const directionFluctuationFactor = Math.random() * 0.7 - 0.1;
+
+        // Increase the speed of the triangle with the counter and fluctuation factor
+        const triangleSpeed = (0.2 + counter * 0.03) * speedFluctuationFactor;
+
+        // Fluctuate the direction of the triangle's movement
+        const newDirectionX = directionX + directionFluctuationFactor;
+        const newDirectionY = directionY + directionFluctuationFactor;
+
+        triangleObj.x = triangleObj.x + newDirectionX * triangleSpeed;
+        triangleObj.y = triangleObj.y + newDirectionY * triangleSpeed;
     }
 }
 
