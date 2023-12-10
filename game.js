@@ -53,7 +53,7 @@ let mouseDown = false;
 let touchDown = false;
 
 canvas.addEventListener('click', function () {
-    if (!gameRunning && document.fullscreenElement) {
+    if (!gameRunning) {
         gameRunning = true;
         gameLoop();
     }
@@ -266,7 +266,7 @@ function displayGameIntro(ctx) {
 
 function displayInstructions(ctx) {
     displayText(ctx, 'Instructions:', canvas.width / 2, canvas.height / 2 + 100, 'lightgrey', 20);
-    displayText(ctx, '1. Avoid the triangle.', canvas.width / 2, canvas.height / 2 + 130, 'lightgrey');
+    displayText(ctx, '1. Avoid the triangles.', canvas.width / 2, canvas.height / 2 + 130, 'lightgrey');
     displayText(ctx, '2. Collect the circles to gain points.', canvas.width / 2, canvas.height / 2 + 160, 'lightgrey');
     displayText(ctx, '3. You have 3 lives. Good luck!', canvas.width / 2, canvas.height / 2 + 190, 'lightgrey');
 }
@@ -275,10 +275,6 @@ function displayVersion(ctx) {
     displayText(ctx, version, canvas.width - 10, canvas.height - 15, 'grey', 14, 'right');
 }
 
-function prepareBackground(ctx) {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
 
 function updateGame() {
     displayCounter();
@@ -336,10 +332,10 @@ function gameLoop() {
     if (!gameRunning) {
         displayStartGame();
     } else if (lives > 0) {
+        updateGame();
         if (lifeLostMessageFlag) {
             displayLifeLostMessage();
         }
-        updateGame();
         requestAnimationFrame(gameLoop);
     } else {
         executeGameOver();
@@ -367,7 +363,6 @@ function executeGameOver() {
 }
 
 function displayStartGame() {
-    prepareBackground(ctx);
     displayGameIntro(ctx);
     displayInstructions(ctx);
     displayVersion(ctx);
@@ -394,10 +389,6 @@ window.onload = function () {
 
     displayStartGame();
 }
-
-canvas.addEventListener('click', () => {
-    goFullScreen();
-});
 
 function goFullScreen() {
     if (canvas.requestFullscreen) {
