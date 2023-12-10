@@ -4,6 +4,8 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+const version = '0.0.1';
+
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
 const amplitude = 5; // Change this to make the pulsating effect more or less pronounced
@@ -29,7 +31,15 @@ const keys = {
     ArrowUp: false,
     ArrowDown: false,
     ArrowLeft: false,
-    ArrowRight: false
+    ArrowRight: false,
+    w: false,
+    a: false,
+    s: false,
+    d: false,
+    W: false,
+    A: false,
+    S: false,
+    D: false
 };
 
 // mouse position
@@ -90,10 +100,10 @@ canvas.addEventListener('touchend', function (event) {
 function calculateRectanglePosition() {
     let newX = rectangleObj.x
     let newY = rectangleObj.y
-    if (keys.ArrowUp) newY -= rectangleSpeed;
-    if (keys.ArrowDown) newY += rectangleSpeed;
-    if (keys.ArrowLeft) newX -= rectangleSpeed;
-    if (keys.ArrowRight) newX += rectangleSpeed;
+    if (keys.ArrowUp || keys.w || keys.W) newY -= rectangleSpeed;
+    if (keys.ArrowDown || keys.s || keys.S) newY += rectangleSpeed;
+    if (keys.ArrowLeft || keys.a || keys.A) newX -= rectangleSpeed;
+    if (keys.ArrowRight || keys.d || keys.D) newX += rectangleSpeed;
     if (mouseDown || touchDown) {
         // Calculate the direction vector
         let dx = targetX - rectangleObj.x;
@@ -297,6 +307,10 @@ function displayInstructions(ctx) {
     displayText(ctx, '3. You have 3 lives. Good luck!', canvas.width / 2, canvas.height / 2 + 140);
 }
 
+function displayVersion(ctx) {
+    displayText(ctx, version, canvas.width - 10, canvas.height - 15, 'grey', 14, 'right');
+}
+
 function preapreBackground(ctx) {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -314,8 +328,8 @@ function updateGame() {
     moveTriangle();
     drawTriangle();
 
-    checkOverlapTriangleRectangle();
     checkOverlapRectangleCircle();
+    checkOverlapTriangleRectangle();
 }
 
 function gameLoop() {
@@ -336,6 +350,7 @@ function displayStartGame() {
     preapreBackground(ctx);
     displayGameIntro(ctx);
     displayInstructions(ctx);
+    displayVersion(ctx);
 }
 
 function displayGameOver() {
@@ -357,7 +372,7 @@ window.onload = function () {
     triangleObj = new Triangle(triangleX, triangleY);
     circleObj = new Circle(circleX, circleY, circleRadius);
 
-    
+
     displayStartGame();
 }
 
@@ -394,7 +409,8 @@ canvas.addEventListener('click', function () {
         counter = 0;
         lives = 3;
 
-        // Start the game loop again
+        // restart the game
+        gameStarted = false;
         gameLoop();
     }
 });

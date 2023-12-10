@@ -15,7 +15,10 @@ Polygon Peril is a 2D game where the player must avoid a triangle while collecti
 
 ## Controls
 
-- Use the arrow keys to move your character.
+- Use the arrow keys or WASD to move your character.
+- Use the mouse to steer your character.
+- On touch devices, touch and drag to steer your character.
+
 
 ## Technologies Used
 
