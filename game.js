@@ -8,8 +8,6 @@ const version = '0.0.5';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
-const amplitude = 5; // Change this to make the pulsating effect more or less pronounced
-const frequency = 0.02; // Change this to make the pulsating effect faster or slower
 const circleRadius = 10; // Change this to change the size of the circle
 const rectangleSpeed = 2; // Change this to make the rectangle move faster or slower
 
@@ -208,7 +206,7 @@ function moveTriangle(triangleObj) {
         const directionY = dy / distance;
 
         // Increase the speed of the triangle with the counter
-        const triangleSpeed = 0.1 + counter * 0.05;
+        const triangleSpeed = 0.2 + counter * 0.03;
 
         triangleObj.x = triangleObj.x + directionX * triangleSpeed;
         triangleObj.y = triangleObj.y + directionY * triangleSpeed;
@@ -254,16 +252,16 @@ function displayFps() {
 }
 
 function displayGameIntro(ctx) {
-    displayText(ctx, 'Polygon Peril', canvas.width / 2, canvas.height / 2 - 100, 'red', 70);
-    displayText(ctx, 'Survive the Shape Shift!', canvas.width / 2, canvas.height / 2 - 50, 'red', 30);
+    displayText(ctx, 'Polygon Peril', canvas.width / 2, canvas.height / 2 - 150, 'red', 70);
+    displayText(ctx, 'Survive the Shape Shift!', canvas.width / 2, canvas.height / 2 - 100, 'red', 30);
     displayText(ctx, 'Click to play the game', canvas.width / 2, canvas.height / 2, 'red', 20);
 }
 
 function displayInstructions(ctx) {
-    displayText(ctx, 'Instructions:', canvas.width / 2, canvas.height / 2 + 50);
-    displayText(ctx, '1. Avoid the triangle.', canvas.width / 2, canvas.height / 2 + 80);
-    displayText(ctx, '2. Collect the circles to gain points.', canvas.width / 2, canvas.height / 2 + 110);
-    displayText(ctx, '3. You have 3 lives. Good luck!', canvas.width / 2, canvas.height / 2 + 140);
+    displayText(ctx, 'Instructions:', canvas.width / 2, canvas.height / 2 + 100, 'lightgrey', 20);
+    displayText(ctx, '1. Avoid the triangle.', canvas.width / 2, canvas.height / 2 + 130, 'lightgrey');
+    displayText(ctx, '2. Collect the circles to gain points.', canvas.width / 2, canvas.height / 2 + 160, 'lightgrey');
+    displayText(ctx, '3. You have 3 lives. Good luck!', canvas.width / 2, canvas.height / 2 + 190, 'lightgrey');
 }
 
 function displayVersion(ctx) {
