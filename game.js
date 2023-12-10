@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const version = '0.0.4';
+const version = '0.0.5';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
