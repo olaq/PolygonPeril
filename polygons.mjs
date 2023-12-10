@@ -60,3 +60,42 @@ class Circle {
         this.color = color;
     }
 }
+
+
+function getAxes(polygon) {
+    let axes = [];
+    for (let i = 0; i < polygon.length; i++) {
+        let p1 = polygon[i];
+        let p2 = polygon[i + 1 === polygon.length ? 0 : i + 1];
+        let edge = { x: p1.x - p2.x, y: p1.y - p2.y };
+        axes.push({ x: -edge.y, y: edge.x });
+    }
+    return axes;
+}
+
+function projectPolygon(axis, polygon) {
+    let min = axis.x * polygon[0].x + axis.y * polygon[0].y;
+    let max = min;
+    for (let i = 1; i < polygon.length; i++) {
+        let p = axis.x * polygon[i].x + axis.y * polygon[i].y;
+        if (p < min) {
+            min = p;
+        } else if (p > max) {
+            max = p;
+        }
+    }
+    return { min, max };
+}
+
+function polygonsOverlap(polygon1, polygon2) {
+    let axes = getAxes(polygon1).concat(getAxes(polygon2));
+    for (let i = 0; i < axes.length; i++) {
+        let axis = axes[i];
+        let projection1 = projectPolygon(axis, polygon1);
+        let projection2 = projectPolygon(axis, polygon2);
+        if (projection1.max < projection2.min || projection2.max < projection1.min) {
+            return false;
+        }
+    }
+    return true;
+}

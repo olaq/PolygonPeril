@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const version = '0.0.2';
+const version = '0.0.3';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
@@ -150,12 +150,12 @@ function drawCircle() {
     ctx.fill();
 }
 
-function calculateRandomCirclePosition() {
+function resetCirclePosition() {
     circleObj.x = Math.random() * (canvas.width - 50);
     circleObj.y = Math.random() * (canvas.height - 50);
 }
 
-function checkOverlapRectangleCircle() {
+function checkCollisionWithCircle() {
     const dx = circleObj.x - rectangleObj.x;
     const dy = circleObj.y - rectangleObj.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -165,7 +165,7 @@ function checkOverlapRectangleCircle() {
         counter++;
 
         // Move the circle to a new random position
-        calculateRandomCirclePosition();
+        resetCirclePosition();
     }
 }
 
@@ -197,40 +197,13 @@ function moveTriangle() {
     }
 }
 
-function checkOverlapTriangleRectangle() {
+function checkCollisionWithTriangle() {
 
     let rectangle = rectangleObj.calculatePolygon();
     let triangle = triangleObj.calculatePolygon();
 
     // Check if the rectangle and triangle overlap using SAT
     if (polygonsOverlap(rectangle, triangle)) {
-        // // log triangle and rectangle
-        // console.log('triangle', triangle);
-        // console.log('rectangle', rectangle);
-
-        // ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // // Draw triangle shadow
-        // ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-        // ctx.beginPath();
-        // ctx.moveTo(triangle[0].x, triangle[0].y);
-        // ctx.lineTo(triangle[1].x, triangle[1].y);
-        // ctx.lineTo(triangle[2].x, triangle[2].y);
-        // ctx.closePath();
-        // ctx.fill();
-
-        // // Draw rectangle shadow
-        // ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-        // ctx.beginPath();
-        // ctx.moveTo(rectangle[0].x, rectangle[0].y);
-        // ctx.lineTo(rectangle[1].x, rectangle[1].y);
-        // ctx.lineTo(rectangle[2].x, rectangle[2].y);
-        // ctx.lineTo(rectangle[3].x, rectangle[3].y);
-        // ctx.closePath();
-        // ctx.fill();
-
-        // debugger; // Pause execution here
-
 
         // Reset the position of the rectangle to the center
         rectangleObj.x = canvas.width / 2;
@@ -243,44 +216,6 @@ function checkOverlapTriangleRectangle() {
         triangleObj.x = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
         triangleObj.y = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
     }
-}
-
-function getAxes(polygon) {
-    let axes = [];
-    for (let i = 0; i < polygon.length; i++) {
-        let p1 = polygon[i];
-        let p2 = polygon[i + 1 === polygon.length ? 0 : i + 1];
-        let edge = { x: p1.x - p2.x, y: p1.y - p2.y };
-        axes.push({ x: -edge.y, y: edge.x });
-    }
-    return axes;
-}
-
-function projectPolygon(axis, polygon) {
-    let min = axis.x * polygon[0].x + axis.y * polygon[0].y;
-    let max = min;
-    for (let i = 1; i < polygon.length; i++) {
-        let p = axis.x * polygon[i].x + axis.y * polygon[i].y;
-        if (p < min) {
-            min = p;
-        } else if (p > max) {
-            max = p;
-        }
-    }
-    return { min, max };
-}
-
-function polygonsOverlap(polygon1, polygon2) {
-    let axes = getAxes(polygon1).concat(getAxes(polygon2));
-    for (let i = 0; i < axes.length; i++) {
-        let axis = axes[i];
-        let projection1 = projectPolygon(axis, polygon1);
-        let projection2 = projectPolygon(axis, polygon2);
-        if (projection1.max < projection2.min || projection2.max < projection1.min) {
-            return false;
-        }
-    }
-    return true;
 }
 
 function displayCounter() {
@@ -322,19 +257,19 @@ function preapreBackground(ctx) {
 }
 
 function updateGame() {
-
     displayCounter();
     displayLives();
     displayFps();
 
     calculateRectanglePosition();
+    moveTriangle();
+
     drawRectangle();
     drawCircle();
-    moveTriangle();
     drawTriangle();
 
-    checkOverlapRectangleCircle();
-    checkOverlapTriangleRectangle();
+    checkCollisionWithCircle();
+    checkCollisionWithTriangle();
 }
 
 function gameLoop() {
