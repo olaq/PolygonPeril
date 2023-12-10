@@ -246,13 +246,13 @@ function nextPhase() {
         }
     }
 
-    if (counter % 1 === 0) {
+    if (counter % 10 === 0) {
         circleObj = newRandomCircleSpecial(rectangleObj);
     } else {
         circleObj = newRandomCircle(rectangleObj);
     }
 
-    if (counter % 1 === 0) { // for testing
+    if (counter % 20 === 0) {
         heartObj = newRandomHeart(rectangleObj);
     }
 }
