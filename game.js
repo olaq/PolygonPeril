@@ -13,7 +13,10 @@ const rectangleSpeed = 2; // Change this to make the rectangle move faster or sl
 
 const rectangleColor = '#307bad'; // Solarized pastel blue
 const triangleColor = '#c94a48'; // Solarized red
-const circleColor = '#76bd52';
+const circleColor = '#76bd52'; // Solarized green
+
+const circleEdgeMargin = 50; // The circle will not spawn in that number of pixels from the canvas
+const triangleEdgeMargin = 70; // The triangle will not spawn in that number of pixels from the canvas
 
 // polygons
 let trianglesObj = [];
@@ -151,11 +154,6 @@ function drawCircle() {
     ctx.fill();
 }
 
-function resetCirclePosition() {
-    circleObj.x = Math.random() * (canvas.width - 50);
-    circleObj.y = Math.random() * (canvas.height - 50);
-}
-
 function checkCollisionWithCircle() {
     const dx = circleObj.x - rectangleObj.x;
     const dy = circleObj.y - rectangleObj.y;
@@ -167,13 +165,11 @@ function checkCollisionWithCircle() {
 
         if (counter % 5 === 0) {
             // Add a new triangle to the triangles array
-            let triangleX = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
-            let triangleY = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
-            trianglesObj.push(new Triangle(triangleX, triangleY, triangleColor));
+            trianglesObj.push(newRandomTriangle());
         }
 
         // Move the circle to a new random position
-        resetCirclePosition();
+        circleObj = newRandomCircle();
     }
 }
 
@@ -316,19 +312,25 @@ function displayLifeLostMessage() {
 
 function resetTrianglesPositions() {
     trianglesObj.forEach(triangle => {
-        triangle.x = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
-        triangle.y = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
+        triangle.x = randomSideX(triangleEdgeMargin);
+        triangle.y = randomSideY(triangleEdgeMargin);
     });
 }
 
+function randomSideY(boarder) {
+    return [boarder, canvas.height - boarder][Math.floor(Math.random() * 2)];
+}
+
+function randomSideX(boarder) {
+    return [boarder, canvas.width - boarder][Math.floor(Math.random() * 2)];
+}
+
 function resetRectanglePosition() {
-    rectangleObj.x = canvas.width / 2;
-    rectangleObj.y = canvas.height / 2;
+    rectangleObj = newCenteredRectangle();
 }
 
 function gameLoop() {
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    clearCanvas();
 
     if (!gameRunning) {
         displayStartGame();
@@ -341,6 +343,10 @@ function gameLoop() {
     } else {
         executeGameOver();
     }
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 /**
@@ -375,35 +381,33 @@ function displayGameOver() {
 }
 
 window.onload = function () {
-    let x = canvas.width / 2;
-    let y = canvas.height / 2;
-    let circleX = Math.random() * (canvas.width - 50);
-    let circleY = Math.random() * (canvas.height - 50);
-    let triangleX = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
-    let triangleY = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
+    resetGameState();
+    gameLoop();
+}
 
+function newRandomCircle() {
+    let circleX = Math.random() * (canvas.width - circleEdgeMargin);
+    let circleY = Math.random() * (canvas.height - circleEdgeMargin);
+    return new Circle(circleX, circleY, circleRadius, circleColor);
+}
 
-    rectangleObj = new Rectangle(x, y, baseSize, baseSize, rectangleColor);
-    trianglesObj.push(new Triangle(triangleX, triangleY, triangleColor));
-    circleObj = new Circle(circleX, circleY, circleRadius, circleColor);
+function newCenteredRectangle() {
+    let centeredX = canvas.width / 2;
+    let centeredY = canvas.height / 2;
+    return new Rectangle(centeredX, centeredY, baseSize, baseSize, rectangleColor);
+}
 
-
-    displayStartGame();
+function newRandomTriangle() {
+    const triangleX = randomSideX(triangleEdgeMargin);
+    const triangleY = randomSideY(triangleEdgeMargin);
+    return new Triangle(triangleX, triangleY, triangleColor);
 }
 
 function resetGameState() {
-    // Reset the game variables
-    let x = canvas.width / 2;
-    let y = canvas.height / 2;
-    let circleX = Math.random() * (canvas.width - 50);
-    let circleY = Math.random() * (canvas.height - 50);
-    let triangleX = Math.random() * (canvas.width - 50);
-    let triangleY = Math.random() * (canvas.height - 50);
-
-    rectangleObj = new Rectangle(x, y, baseSize, baseSize, rectangleColor);
+    rectangleObj = newCenteredRectangle();
     trianglesObj = [];
-    trianglesObj.push(new Triangle(triangleX, triangleY, triangleColor));
-    circleObj = new Circle(circleX, circleY, circleRadius, circleColor);
+    trianglesObj.push(newRandomTriangle());
+    circleObj = newRandomCircle();
 
     counter = 0;
     lives = 3;
