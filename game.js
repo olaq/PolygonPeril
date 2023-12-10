@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const version = '0.0.3';
+const version = '0.0.4';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
@@ -15,10 +15,10 @@ const rectangleSpeed = 2; // Change this to make the rectangle move faster or sl
 
 const rectangleColor = '#b58900'; // Solarized pastel blue
 const triangleColor = '#dc322f'; // Solarized red
-const circleColor = 'lime'; 
+const circleColor = 'lime';
 
 // polygons
-let triangleObj;
+let trianglesObj = [];
 let rectangleObj;
 let circleObj;
 
@@ -164,12 +164,24 @@ function checkCollisionWithCircle() {
         // Increase the counter
         counter++;
 
+        if (counter%5 === 0) {
+            // Add a new triangle to the triangles array
+            let triangleX = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
+            let triangleY = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
+            trianglesObj.push(new Triangle(triangleX, triangleY, triangleColor));
+        }
+
         // Move the circle to a new random position
         resetCirclePosition();
     }
 }
+function drawTriangles() {
+    trianglesObj.forEach(triangle => {
+        drawTriangle(triangle);
+    });
+}
 
-function drawTriangle() {
+function drawTriangle(triangleObj) {
     let triangle = triangleObj.calculatePolygon();
     ctx.beginPath();
     ctx.moveTo(triangle[0].x, triangle[0].y);
@@ -180,7 +192,13 @@ function drawTriangle() {
     ctx.fill();
 }
 
-function moveTriangle() {
+function moveTriangles() {
+    trianglesObj.forEach(triangle => {
+        moveTriangle(triangle);
+    });
+}
+
+function moveTriangle(triangleObj) {
     const dx = rectangleObj.x - triangleObj.x;
     const dy = rectangleObj.y - triangleObj.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -197,18 +215,19 @@ function moveTriangle() {
     }
 }
 
-function checkCollisionWithTriangle() {
+function checkCollisionWithTriangles() {
+    trianglesObj.forEach(triangle => {
+        checkCollisionWithTriangle(triangle);
+    });
+}
+
+function checkCollisionWithTriangle(triangleObj) {
 
     let rectangle = rectangleObj.calculatePolygon();
     let triangle = triangleObj.calculatePolygon();
 
     // Check if the rectangle and triangle overlap using SAT
     if (polygonsOverlap(rectangle, triangle)) {
-
-        // Reset the position of the rectangle to the center
-        rectangleObj.x = canvas.width / 2;
-        rectangleObj.y = canvas.height / 2;
-
         // Remove one life
         lives--;
 
@@ -262,14 +281,14 @@ function updateGame() {
     displayFps();
 
     calculateRectanglePosition();
-    moveTriangle();
+    moveTriangles();
 
     drawRectangle();
     drawCircle();
-    drawTriangle();
+    drawTriangles();
 
     checkCollisionWithCircle();
-    checkCollisionWithTriangle();
+    checkCollisionWithTriangles();
 }
 
 function gameLoop() {
@@ -309,7 +328,7 @@ window.onload = function () {
 
 
     rectangleObj = new Rectangle(x, y, baseSize, baseSize, rectangleColor);
-    triangleObj = new Triangle(triangleX, triangleY, triangleColor);
+    trianglesObj.push(new Triangle(triangleX, triangleY, triangleColor));
     circleObj = new Circle(circleX, circleY, circleRadius, circleColor);
 
 
@@ -343,7 +362,8 @@ canvas.addEventListener('click', function () {
         let triangleY = Math.random() * (canvas.height - 50);
 
         rectangleObj = new Rectangle(x, y, baseSize, baseSize, rectangleColor);
-        triangleObj = new Triangle(triangleX, triangleY, triangleColor);
+        trianglesObj = [];
+        trianglesObj.push(new Triangle(triangleX, triangleY, triangleColor));
         circleObj = new Circle(circleX, circleY, circleRadius, circleColor);
 
         counter = 0;
