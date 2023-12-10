@@ -259,6 +259,7 @@ function displayGameIntro(ctx) {
     displayText(ctx, 'Polygon Peril', canvas.width / 2, canvas.height / 2 - 150, 'red', 70);
     displayText(ctx, 'Survive the Shape Shift!', canvas.width / 2, canvas.height / 2 - 100, 'red', 30);
     displayText(ctx, 'Click to play the game', canvas.width / 2, canvas.height / 2, 'red', 20);
+    displayText(ctx, 'https://github.com/olaq/PolygonPeril', 10, canvas.height - 15, 'darkgrey', 15, 'left');
 }
 
 function displayInstructions(ctx) {
