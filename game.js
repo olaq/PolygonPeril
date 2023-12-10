@@ -4,14 +4,14 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const version = '0.0.5';
+const version = '0.0.6';
 
 // Calculate the size of the square using a sine wave to make it pulsate
 const baseSize = 25;
 const circleRadius = 10; // Change this to change the size of the circle
 const rectangleSpeed = 2; // Change this to make the rectangle move faster or slower
 
-const rectangleColor = '#487ba9'; // Solarized pastel blue
+const rectangleColor = '#307bad'; // Solarized pastel blue
 const triangleColor = '#c94a48'; // Solarized red
 const circleColor = '#76bd52';
 
@@ -104,10 +104,7 @@ canvas.addEventListener('touchend', function () {
 function calculateRectanglePosition() {
     let newX = rectangleObj.x
     let newY = rectangleObj.y
-    if (keys.ArrowUp || keys.w || keys.W) newY -= rectangleSpeed;
-    if (keys.ArrowDown || keys.s || keys.S) newY += rectangleSpeed;
-    if (keys.ArrowLeft || keys.a || keys.A) newX -= rectangleSpeed;
-    if (keys.ArrowRight || keys.d || keys.D) newX += rectangleSpeed;
+
     if (mouseDown || touchDown) {
         // Calculate the direction vector
         let dx = targetX - rectangleObj.x;
@@ -119,6 +116,10 @@ function calculateRectanglePosition() {
         newX += directionX * rectangleSpeed;
         newY += directionY * rectangleSpeed;
     }
+    else if (keys.ArrowUp || keys.w || keys.W) newY -= rectangleSpeed;
+    else if (keys.ArrowDown || keys.s || keys.S) newY += rectangleSpeed;
+    else if (keys.ArrowLeft || keys.a || keys.A) newX -= rectangleSpeed;
+    else if (keys.ArrowRight || keys.d || keys.D) newX += rectangleSpeed;
 
     // Check if the new position is inside the canvas
     if (newX >= baseSize / 2 && newX <= canvas.width - baseSize / 2) {
@@ -133,7 +134,7 @@ function calculateRectanglePosition() {
 function drawRectangle() {
     let rectangle = rectangleObj.calculatePolygon();
 
-    ctx.fillStyle = 'blue';
+    ctx.fillStyle = rectangleObj.color;
     ctx.beginPath();
     ctx.moveTo(rectangle[0].x, rectangle[0].y);
     ctx.lineTo(rectangle[1].x, rectangle[1].y);
@@ -277,16 +278,16 @@ function displayVersion(ctx) {
 
 
 function updateGame() {
-    displayCounter();
-    displayLives();
-    displayFps();
-
     calculateRectanglePosition();
     moveTriangles();
 
     drawRectangle();
     drawCircle();
     drawTriangles();
+
+    displayCounter();
+    displayLives();
+    displayFps();
 
     checkCollisionWithCircle();
     checkCollisionWithTriangles();
@@ -299,7 +300,7 @@ function lostLife() {
     resetRectanglePosition();
     setTimeout(() => {
         lifeLostMessageFlag = false;
-    }, 700);
+    }, 900);
 }
 
 function displayLifeLostMessage() {
@@ -388,18 +389,6 @@ window.onload = function () {
 
 
     displayStartGame();
-}
-
-function goFullScreen() {
-    if (canvas.requestFullscreen) {
-        canvas.requestFullscreen();
-    } else if (canvas.mozRequestFullScreen) { // Firefox
-        canvas.mozRequestFullScreen();
-    } else if (canvas.webkitRequestFullscreen) { // Chrome, Safari and Opera
-        canvas.webkitRequestFullscreen();
-    } else if (canvas.msRequestFullscreen) { // IE/Edge
-        canvas.msRequestFullscreen();
-    }
 }
 
 function resetGameState() {
