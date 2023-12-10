@@ -290,6 +290,7 @@ function lostLife() {
     lives--;
     lifeLostMessageFlag = true
     resetTrianglesPositions();
+    resetRectanglePosition();
     setTimeout(() => {
         lifeLostMessageFlag = false;
     }, 700);
@@ -311,7 +312,11 @@ function resetTrianglesPositions() {
         triangle.x = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
         triangle.y = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
     });
+}
 
+function resetRectanglePosition() {
+    rectangleObj.x = canvas.width / 2;
+    rectangleObj.y = canvas.height / 2;
 }
 
 function gameLoop() {
