@@ -11,9 +11,9 @@ const baseSize = 25;
 const circleRadius = 10; // Change this to change the size of the circle
 const rectangleSpeed = 2; // Change this to make the rectangle move faster or slower
 
-const rectangleColor = '#b58900'; // Solarized pastel blue
-const triangleColor = '#dc322f'; // Solarized red
-const circleColor = 'lime';
+const rectangleColor = '#487ba9'; // Solarized pastel blue
+const triangleColor = '#c94a48'; // Solarized red
+const circleColor = '#76bd52';
 
 // polygons
 let trianglesObj = [];
@@ -23,7 +23,9 @@ let circleObj;
 // game variables
 let counter = 0;
 let lives = 3;
-let gameStarted = false;
+let gameRunning = false;
+let gameOverMessageFlag = false;
+let lifeLostMessageFlag = false;
 
 // FPS counter
 const fpsCounter = new FPSCounter();
@@ -51,8 +53,8 @@ let mouseDown = false;
 let touchDown = false;
 
 canvas.addEventListener('click', function () {
-    if (!gameStarted && document.fullscreenElement) {
-        gameStarted = true;
+    if (!gameRunning && document.fullscreenElement) {
+        gameRunning = true;
         gameLoop();
     }
 });
@@ -95,7 +97,7 @@ canvas.addEventListener('touchmove', function (event) {
     targetY = event.touches[0].clientY;
 }, false);
 
-canvas.addEventListener('touchend', function (event) {
+canvas.addEventListener('touchend', function () {
     touchDown = false;
 }, false);
 
@@ -119,10 +121,10 @@ function calculateRectanglePosition() {
     }
 
     // Check if the new position is inside the canvas
-    if (newX >= 0 + baseSize / 2 && newX <= canvas.width - baseSize / 2) {
+    if (newX >= baseSize / 2 && newX <= canvas.width - baseSize / 2) {
         rectangleObj.x = newX;
     }
-    if (newY >= 0 + baseSize / 2 && newY <= canvas.height - baseSize / 2) {
+    if (newY >= baseSize / 2 && newY <= canvas.height - baseSize / 2) {
         rectangleObj.y = newY;
     }
     rectangleObj.update();
@@ -162,7 +164,7 @@ function checkCollisionWithCircle() {
         // Increase the counter
         counter++;
 
-        if (counter%5 === 0) {
+        if (counter % 5 === 0) {
             // Add a new triangle to the triangles array
             let triangleX = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
             let triangleY = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
@@ -173,6 +175,7 @@ function checkCollisionWithCircle() {
         resetCirclePosition();
     }
 }
+
 function drawTriangles() {
     trianglesObj.forEach(triangle => {
         drawTriangle(triangle);
@@ -224,14 +227,8 @@ function checkCollisionWithTriangle(triangleObj) {
     let rectangle = rectangleObj.calculatePolygon();
     let triangle = triangleObj.calculatePolygon();
 
-    // Check if the rectangle and triangle overlap using SAT
     if (polygonsOverlap(rectangle, triangle)) {
-        // Remove one life
-        lives--;
-
-        // Reset the position of the triangle to a random corner
-        triangleObj.x = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
-        triangleObj.y = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
+        lostLife();
     }
 }
 
@@ -268,7 +265,7 @@ function displayVersion(ctx) {
     displayText(ctx, version, canvas.width - 10, canvas.height - 15, 'grey', 14, 'right');
 }
 
-function preapreBackground(ctx) {
+function prepareBackground(ctx) {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
@@ -289,22 +286,73 @@ function updateGame() {
     checkCollisionWithTriangles();
 }
 
+function lostLife() {
+    lives--;
+    lifeLostMessageFlag = true
+    resetTrianglesPositions();
+    setTimeout(() => {
+        lifeLostMessageFlag = false;
+    }, 700);
+}
+
+function displayLifeLostMessage() {
+    displayText(ctx, 'You died!', canvas.width / 2, canvas.height / 2, 'red', 50);
+    // display number of lives left
+    let livesText = '';
+    for (let i = 0; i < lives; i++) {
+        livesText += '\u2764 ';
+    }
+    displayText(ctx, 'Lives left: ' + livesText, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
+
+}
+
+function resetTrianglesPositions() {
+    trianglesObj.forEach(triangle => {
+        triangle.x = [50, canvas.width - 50][Math.floor(Math.random() * 2)];
+        triangle.y = [50, canvas.height - 50][Math.floor(Math.random() * 2)];
+    });
+
+}
+
 function gameLoop() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (!gameStarted) {
+    if (!gameRunning) {
         displayStartGame();
     } else if (lives > 0) {
+        if (lifeLostMessageFlag) {
+            displayLifeLostMessage();
+        }
         updateGame();
         requestAnimationFrame(gameLoop);
     } else {
-        displayGameOver();
+        executeGameOver();
     }
 }
 
+/**
+ * Executes the game over logic.
+ */
+function executeGameOver() {
+    gameOverMessageFlag = true;
+
+    displayGameOver();
+    // change game over state to false after 1 second
+    setTimeout(() => {
+        gameOverMessageFlag = false;
+        displayText(ctx, 'click to continue', canvas.width / 2, canvas.height / 2 + 100, 'red', 20);
+
+        // add event listener to restart the game
+        canvas.addEventListener('click', function () {
+            resetGameState();
+            gameLoop();
+        }, { once: true });
+    }, 1000);
+}
+
 function displayStartGame() {
-    preapreBackground(ctx);
+    prepareBackground(ctx);
     displayGameIntro(ctx);
     displayInstructions(ctx);
     displayVersion(ctx);
@@ -313,7 +361,6 @@ function displayStartGame() {
 function displayGameOver() {
     displayText(ctx, 'GAME OVER', canvas.width / 2, canvas.height / 2, 'red', 50);
     displayText(ctx, `Points: ${counter}`, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
-    displayText(ctx, 'click to continue', canvas.width / 2, canvas.height / 2 + 100, 'red', 20);
 }
 
 window.onload = function () {
@@ -349,26 +396,21 @@ function goFullScreen() {
     }
 }
 
-canvas.addEventListener('click', function () {
-    if (lives <= 0) {
-        // Reset the game variables
-        let x = canvas.width / 2;
-        let y = canvas.height / 2;
-        let circleX = Math.random() * (canvas.width - 50);
-        let circleY = Math.random() * (canvas.height - 50);
-        let triangleX = Math.random() * (canvas.width - 50);
-        let triangleY = Math.random() * (canvas.height - 50);
+function resetGameState() {
+    // Reset the game variables
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+    let circleX = Math.random() * (canvas.width - 50);
+    let circleY = Math.random() * (canvas.height - 50);
+    let triangleX = Math.random() * (canvas.width - 50);
+    let triangleY = Math.random() * (canvas.height - 50);
 
-        rectangleObj = new Rectangle(x, y, baseSize, baseSize, rectangleColor);
-        trianglesObj = [];
-        trianglesObj.push(new Triangle(triangleX, triangleY, triangleColor));
-        circleObj = new Circle(circleX, circleY, circleRadius, circleColor);
+    rectangleObj = new Rectangle(x, y, baseSize, baseSize, rectangleColor);
+    trianglesObj = [];
+    trianglesObj.push(new Triangle(triangleX, triangleY, triangleColor));
+    circleObj = new Circle(circleX, circleY, circleRadius, circleColor);
 
-        counter = 0;
-        lives = 3;
-
-        // restart the game
-        gameStarted = false;
-        gameLoop();
-    }
-});
+    counter = 0;
+    lives = 3;
+    gameRunning = false;
+}
