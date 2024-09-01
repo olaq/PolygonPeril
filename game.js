@@ -102,6 +102,12 @@ window.addEventListener('keyup', (event) => {
     }
 });
 
+// Add a resize event listener to update canvas size
+window.addEventListener('resize', function() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
 canvas.addEventListener('mousedown', function () {
     mouseDown = true;
 });
@@ -128,12 +134,13 @@ canvas.addEventListener('touchmove', function (event) {
     targetY = event.touches[0].clientY;
 }, false);
 
-canvas.addEventListener('touchend', function () {
+canvas.addEventListener('touchend', function (event) {
+    event.preventDefault(); // Prevent default behavior
     touchDown = false;
 }, false);
 
 function calculateRectanglePosition() {
-    speed = rectangleSpeed + 0.1 * gameState.level;
+    let speed = rectangleSpeed + 0.1 * gameState.level; 
     let newX = rectangleObj.x
     let newY = rectangleObj.y
 
@@ -279,17 +286,21 @@ function nextPhase() {
 
     if (gameState.counter % 5 === 0) {
         if (gameState.counter % 15 === 0) {
-            hexesObj.push(newRandomHex());
-            gameState.messageFlags.newObstacle = true
-            setTimeout(() => {
-                gameState.messageFlags.newObstacle = false;
-            }, 900);
+            if (hexesObj.length < 10) {  // Limit number of hexes
+                hexesObj.push(newRandomHex());
+                gameState.messageFlags.newObstacle = true
+                setTimeout(() => {
+                    gameState.messageFlags.newObstacle = false;
+                }, 900);
+            }
         } else {
-            trianglesObj.push(newRandomTriangle());
-            gameState.messageFlags.dangerIncrease = true
-            setTimeout(() => {
-                gameState.messageFlags.dangerIncrease = false;
-            }, 900);
+            if (trianglesObj.length < 15) {  // Limit number of triangles
+                trianglesObj.push(newRandomTriangle());
+                gameState.messageFlags.dangerIncrease = true
+                setTimeout(() => {
+                    gameState.messageFlags.dangerIncrease = false;
+                }, 900);
+            }
         }
     }
 
@@ -330,22 +341,28 @@ function resetRectanglePosition() {
     rectangleObj = newCenteredRectangle();
 }
 
+function randomCirclePosition(rectangleObj, dimension) {
+    let attempts = 0;
+    let position;
+    const maxDimension = dimension === 'x' ? canvas.width : canvas.height;
+    const rectanglePosition = dimension === 'x' ? rectangleObj.x : rectangleObj.y;
+
+    do {
+        position = Math.random() * (maxDimension - circleEdgeMargin);
+        attempts++;
+    } while (position > rectanglePosition - minimumSpawnDistance && 
+             position < rectanglePosition + minimumSpawnDistance && 
+             attempts < 100);
+    
+    return position;
+}
+
 function randomCircleX(rectangleObj) {
-    let circleX = Math.random() * (canvas.width - circleEdgeMargin);
-    while (circleX > rectangleObj.x - minimumSpawnDistance && circleX < rectangleObj.x + minimumSpawnDistance) {
-        console.log('Retrying due to close spawn: circleX', circleX, 'rectangleObj.x', rectangleObj.x)
-        circleX = Math.random() * (canvas.width - circleEdgeMargin);
-    }
-    return circleX;
+    return randomCirclePosition(rectangleObj, 'x');
 }
 
 function randomCircleY(rectangleObj) {
-    let circleY = Math.random() * (canvas.height - circleEdgeMargin);
-    while (circleY > rectangleObj.y - minimumSpawnDistance && circleY < rectangleObj.y + minimumSpawnDistance) {
-        console.log('Retrying due to close spawn: circleY', circleY, 'rectangleObj.y', rectangleObj.y)
-        circleY = Math.random() * (canvas.height - circleEdgeMargin);
-    }
-    return circleY;
+    return randomCirclePosition(rectangleObj, 'y');
 }
 
 function newRandomCircle(rectangleObj) {
@@ -362,7 +379,7 @@ function newRandomCircleSpecial(rectangleObj) {
 
 function newRandomHeart(rectangleObj) {
     let heartX = randomCircleX(rectangleObj);
-    let heartY = randomCircleX(rectangleObj);
+    let heartY = randomCircleY(rectangleObj);
     return new Heart(heartX, heartY, circleRadius);
 }
 
