@@ -173,13 +173,13 @@ function checkCollisionWithHex(hexObj, rectangleObj) {
     return polygonsOverlap(rectangle, hex);
 }
 
-function moveTriangles(trianglesObj, rectangleObj) {
+function moveTriangles(trianglesObj, rectangleObj, counter) {
     trianglesObj.forEach(triangle => {
-        moveTriangle(triangle, rectangleObj);
+        moveTriangle(triangle, rectangleObj, counter);
     });
 }
 
-function moveTriangle(triangleObj, rectangleObj) {
+function moveTriangle(triangleObj, rectangleObj, counter) {
     const dx = rectangleObj.x - triangleObj.x;
     const dy = rectangleObj.y - triangleObj.y;
     const distance = Math.sqrt(dx * dx + dy * dy);

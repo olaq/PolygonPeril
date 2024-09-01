@@ -58,7 +58,7 @@ function displayNewObstacleMessage(ctx) {
     displayText(ctx, 'New obstacle!', canvas.width / 2, canvas.height / 2 - 60, hexColor, 20);
 }
 
-function displayGameOver() {
+function displayGameOver(counter) {
     displayText(ctx, 'GAME OVER', canvas.width / 2, canvas.height / 2, 'red', 50);
     displayText(ctx, `Points: ${counter}`, canvas.width / 2, canvas.height / 2 + 50, 'red', 30);
 }
