@@ -25,6 +25,8 @@ const triangleEdgeMargin = 70; // The triangle will not spawn in that number of 
 const hexEdgeMargin = 50; // The hex will not spawn in that number of pixels from the canvas
 
 const dyingTime = 500; // time it takes to fade out after death
+const maxGlowIntensity = 30;
+const glowDuration = 500; // Duration of the glow effect in milliseconds
 
 
 // polygons
@@ -244,7 +246,7 @@ function updateGame() {
     drawHexes(ctx, hexesObj);
     drawHeart(ctx, heartObj);
 
-    displayCounter(ctx, gameState.counter);
+    displayCounter(ctx, gameState);
     displayLives(ctx, gameState.lives);
     displayFps(ctx, fpsCounter.calculateFPS());
 
@@ -464,17 +466,17 @@ function glowRectangle(ctx, rectangleObj) {
         ctx.shadowColor = 'white';
         drawRectangle(ctx, rectangleObj);
         ctx.restore();
-        gameState.glow.intensity = Math.max(0, gameState.glow.intensity - 1);
+        gameState.glow.intensity = Math.max(0, gameState.glow.intensity - maxGlowIntensity/100);
     }
 }
 
 function startWhiteGlowAnimation() {
     gameState.glow.isGlowing = true;
-    gameState.glow.intensity = 50;
+    gameState.glow.intensity = maxGlowIntensity;
     setTimeout(() => {
         gameState.glow.isGlowing = false;
         gameState.glow.intensity = 0;
-    }, 500);
+    }, glowDuration);
 }
 
 window.onload = function () {

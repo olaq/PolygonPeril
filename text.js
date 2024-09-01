@@ -1,5 +1,23 @@
-function displayCounter(ctx, counter) {
-    displayText(ctx, `Points: ${counter}`, canvas.width - 10, 30, 'grey', 20, 'right')
+function displayCounter(ctx, gameState) {
+    const baseSize = 20;
+    const maxSizeIncrease = 5;
+    let fontSize = baseSize;
+    let color = 'grey';
+
+    if (gameState.glow.isGlowing) {
+        fontSize = baseSize + maxSizeIncrease * gameState.glow.intensity/10;
+        color = `rgba(255, 255, 255, ${0.5 + 0.5 * gameState.glow.intensity/10})`;
+        
+        ctx.save();
+        ctx.shadowColor = 'white';
+        ctx.shadowBlur = gameState.glow.intensity/100;
+    }
+
+    displayText(ctx, `Points: ${gameState.counter}`, canvas.width - 10, 30, color, fontSize, 'right');
+
+    if (gameState.glow.isGlowing) {
+        ctx.restore();
+    }
 }
 
 function displayLives(ctx, lives) {
