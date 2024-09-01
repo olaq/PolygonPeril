@@ -221,14 +221,14 @@ function moveHex(hexObj, rectangleObj, canvasWidth, canvasHeight) {
         const directionY = dy / distance;
 
         // Calculate the fluctuation factor for the hex's speed
-        const speedFluctuationFactor = Math.random() * 0.4;
+        const speedFluctuationFactor = Math.random() * 0.8;
 
         // Fluctuate the speed
         const hexSpeed = 0.5 * speedFluctuationFactor;
 
         // Fluctuate the direction of the hex's movement with sinus
-        const newDirectionX = directionX + Math.sin(new Date().getTime() * 0.001) * 5;
-        const newDirectionY = directionY + Math.cos(new Date().getTime() * 0.001) * 5;
+        const newDirectionX = directionX + Math.sin(new Date().getTime() * 0.001) * 4;
+        const newDirectionY = directionY + Math.cos(new Date().getTime() * 0.001) * 4;
 
         const newX = hexObj.x + newDirectionX * hexSpeed;
         const newY = hexObj.y + newDirectionY * hexSpeed;

@@ -28,9 +28,9 @@ const dyingTime = 500; // time it takes to fade out after death
 const maxGlowIntensity = 30;
 const glowDuration = 500; // Duration of the glow effect in milliseconds
 
-const hexFrequency = 3;    // number of scores between hex spawns
+const hexFrequency = 9;    // number of scores between hex spawns
 const triangleFrequency = 5; // number of scores between triangle spawns
-const heartFrequency = 20; // number of scores between heart spawns
+const heartFrequency = 17; // number of scores between heart spawns
 const hexNumberLimit = 10;  // maximum number of hexes on screen
 const triangleNumberLimit = 15; // maximum number of triangles on screen
 
@@ -231,11 +231,16 @@ function updateGame() {
             lostLife();
         }
         
-        // Check for hex collisions and apply bumping effect
+        // Check for hex collisions and apply bumping effect to rectangle and triangles
         hexesObj.forEach(hex => {
             if (rectangleObj.isCollidingWith(hex)) {
-                bumpRectangle(rectangleObj, hex);
+                bumpObject(rectangleObj, hex);
             }
+            trianglesObj.forEach(triangle => {
+                if (triangle.isCollidingWith(hex)) {
+                    bumpObject(triangle, hex);
+                }
+            });
         });
 
         if (rectangleObj.isCollidingWith(heartObj)) {
@@ -493,17 +498,13 @@ function startWhiteGlowAnimation() {
     }, glowDuration);
 }
 
-function bumpRectangle(rectangle, hex) {
-    const dx = rectangle.x - hex.x;
-    const dy = rectangle.y - hex.y;
+function bumpObject(object, hex) {
+    const dx = object.x - hex.x;
+    const dy = object.y - hex.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    rectangle.x += (dx / distance) * hexBumpForce;
-    rectangle.y += (dy / distance) * hexBumpForce;
-
-    // Ensure the rectangle stays within the canvas bounds
-    rectangle.x = Math.max(baseSize / 2, Math.min(canvas.width - baseSize / 2, rectangle.x));
-    rectangle.y = Math.max(baseSize / 2, Math.min(canvas.height - baseSize / 2, rectangle.y));
+    object.x += (dx / distance) * hexBumpForce;
+    object.y += (dy / distance) * hexBumpForce;
 }
 
 window.onload = function () {
