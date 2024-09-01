@@ -24,6 +24,8 @@ const circleEdgeMargin = 60; // The circle will not spawn in that number of pixe
 const triangleEdgeMargin = 70; // The triangle will not spawn in that number of pixels from the canvas
 const hexEdgeMargin = 50; // The hex will not spawn in that number of pixels from the canvas
 
+const dyingTime = 500; // time it takes to fade out after death
+
 
 // polygons
 let rectangleObj;
@@ -52,8 +54,6 @@ const gameState = {
     },
     death: {
         isDead: false,
-        isRedGlowing: false,
-        redIntensity: 0,
         opacity: 1
     }
 };
@@ -198,12 +198,40 @@ function newLife() {
 }
 
 function updateGame() {
-    calculateRectanglePosition();
-    moveTriangles(trianglesObj, rectangleObj);
-    moveHexes(hexesObj, rectangleObj);
+    if (!gameState.death.isDead) {
+        calculateRectanglePosition();
+        moveTriangles(trianglesObj, rectangleObj);
+        moveHexes(hexesObj, rectangleObj);
 
+        if (checkCollisionWithCircle(circleObj, rectangleObj)) {
+            if (circleObj.special === true) {
+                levelUp();
+            }
+            startWhiteGlowAnimation();
+            nextPhase();
+        }
+        if (checkCollisionWithTriangles(trianglesObj, rectangleObj)
+            || checkCollisionWithHexes(hexesObj, rectangleObj)) {
+            lostLife();
+        }
+
+        if (checkCollisionWithHeart(heartObj, rectangleObj)) {
+            newLife();
+        }
+    }
+
+    ctx.save();
+    if (gameState.death.isDead) {
+        ctx.globalAlpha = gameState.death.opacity;
+        gameState.death.opacity -= 0.02;
+        if (gameState.death.opacity <= 0) {
+            gameState.death.opacity = 0;
+        }
+    }
     drawRectangle(ctx, rectangleObj);
     glowRectangle(ctx, rectangleObj);
+    ctx.restore();
+
     drawCircle(ctx, circleObj);
     drawTriangles(ctx, trianglesObj);
     drawHexes(ctx, hexesObj);
@@ -213,35 +241,37 @@ function updateGame() {
     displayLives(ctx, lives);
     displayFps(ctx, fpsCounter.calculateFPS());
 
-    if (checkCollisionWithCircle(circleObj, rectangleObj)) {
-        if (circleObj.special === true) {
-            levelUp();
-        }
-        startGlowAnimation();
-        nextPhase();
-    }
-    if (checkCollisionWithTriangles(trianglesObj, rectangleObj)
-        || checkCollisionWithHexes(hexesObj, rectangleObj)) {
-        lostLife();
-    }
-
-    if (checkCollisionWithHeart(heartObj, rectangleObj)) {
-        newLife();
-    }
-
     showMessages();
 }
 
 function lostLife() {
-    // animateDeath()
-    lives--;
-    gameState.messageFlags.lifeLost = true
-    resetTrianglesPositions(trianglesObj);
-    resetHexPositions(hexesObj);
-    resetRectanglePosition();
+    gameState.death.isDead = true;
+    gameState.death.opacity = 1;
+    gameState.messageFlags.lifeLost = true;
+
     setTimeout(() => {
+        gameState.death.isDead = false;
         gameState.messageFlags.lifeLost = false;
-    }, 900);
+        lives--;
+
+        if (lives > 0) {
+            resetTrianglesPositions(trianglesObj);
+            resetHexPositions(hexesObj);
+            resetRectanglePosition();
+        }
+    }, dyingTime);
+}
+
+
+function drawDeath(ctx, rectangleObj) {
+    ctx.globalAlpha = gameState.death.opacity;
+    gameState.death.opacity -= 0.02;
+    if (gameState.death.opacity <= 0) {
+        gameState.death.opacity = 0;
+    }
+    drawRectangle(ctx, rectangleObj);
+    ctx.globalAlpha = 1;
+    ctx.restore();
 }
 
 function nextPhase() {
@@ -421,9 +451,9 @@ function glowRectangle(ctx, rectangleObj) {
     }
 }
 
-function startGlowAnimation() {
+function startWhiteGlowAnimation() {
     gameState.glow.isGlowing = true;
-    gameState.glow.intensity = 30;
+    gameState.glow.intensity = 50;
     setTimeout(() => {
         gameState.glow.isGlowing = false;
         gameState.glow.intensity = 0;
