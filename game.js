@@ -43,6 +43,8 @@ let dangerIncreaseMessageFlag = false;
 let newObstacleMessageFlag = false;
 let levelUpMessageFlag = false;
 let newLifeMessageFlag = false;
+let glowIntensity = 0;
+let isGlowing = false;
 
 // FPS counter
 const fpsCounter = new FPSCounter();
@@ -189,6 +191,9 @@ function updateGame() {
     moveHexes(hexesObj, rectangleObj);
 
     drawRectangle(ctx, rectangleObj);
+    if (isGlowing) {
+        drawGlow(ctx, rectangleObj);
+    }
     drawCircle(ctx, circleObj);
     drawTriangles(ctx, trianglesObj);
     drawHexes(ctx, hexesObj);
@@ -202,6 +207,7 @@ function updateGame() {
         if (circleObj.special === true) {
             levelUp();
         }
+        startGlowAnimation();
         nextPhase();
     }
     if (checkCollisionWithTriangles(trianglesObj, rectangleObj)
@@ -370,7 +376,7 @@ function executeGameOver() {
         canvas.addEventListener('click', function () {
             resetGameState();
             gameLoop();
-        }, {once: true});
+        }, { once: true });
     }, 1000);
 }
 
@@ -391,6 +397,25 @@ function resetGameState() {
     lives = 3;
     level = 1;
     gameRunning = false;
+}
+
+function drawGlow(ctx, rectangleObj) {
+    ctx.save();
+    ctx.shadowBlur = glowIntensity;
+    ctx.shadowColor = 'white';
+    drawRectangle(ctx, rectangleObj);
+    ctx.restore();
+
+    glowIntensity = Math.max(0, glowIntensity - 1);
+}
+
+function startGlowAnimation() {
+    isGlowing = true;
+    glowIntensity = 30;
+    setTimeout(() => {
+        isGlowing = false;
+        glowIntensity = 0;
+    }, 1000);
 }
 
 window.onload = function () {
