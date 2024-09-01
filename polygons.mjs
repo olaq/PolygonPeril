@@ -19,7 +19,7 @@ class Polygon {
         return polygonsOverlap(firstPolygon, otherPolygon);
     }
 
-    isCollidingWithMultiple(otherPolygonObjs) {
+    isCollidingWithAnyOf(otherPolygonObjs) {
         if(otherPolygonObjs == null) {
             return false;
         }
@@ -194,7 +194,7 @@ function moveTriangle(triangleObj, rectangleObj, hexesObj, counter, canvasWidth,
 
         // Check boundaries before updating position
         if (newX >= 0 && newX <= canvasWidth && newY >= 0 && newY <= canvasHeight) {
-            if(!triangleObj.isCollidingWithMultiple(hexesObj)) {
+            if(!triangleObj.isCollidingWithAnyOf(hexesObj)) {
                 triangleObj.x = newX;
                 triangleObj.y = newY;
             } else {
