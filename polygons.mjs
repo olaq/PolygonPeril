@@ -41,8 +41,8 @@ class Rectangle extends Polygon {
 
         this.pulseDirection = 1;
         this.pulseSpeed = 0.07;
-        this.minSize = width * 0.95;
-        this.maxSize = width * 1.05;
+        this.minHeight = height * 0.95;
+        this.maxHeight = height * 1.05;
     }
 
     calculatePolygon() {
@@ -58,9 +58,9 @@ class Rectangle extends Polygon {
         this.width -= this.pulseDirection * this.pulseSpeed;
         this.height += this.pulseDirection * this.pulseSpeed;
 
-        if (this.height > this.maxSize) {
+        if (this.height > this.maxHeight) {
             this.pulseDirection = -1;
-        } else if (this.height < this.minSize) {
+        } else if (this.height < this.minHeight) {
             this.pulseDirection = 1;
         }
     }
@@ -88,11 +88,16 @@ class Circle extends Polygon {
     }
 
     calculatePolygon() {
-        return [
-            {x: this.x, y: this.y},
-            {x: this.x - this.radius, y: this.y},
-            {x: this.x + this.radius, y: this.y}
-        ];
+        const segments = 16; // Increase for better approximation
+        const points = [];
+        for (let i = 0; i < segments; i++) {
+            const angle = (i / segments) * 2 * Math.PI;
+            points.push({
+                x: this.x + this.radius * Math.cos(angle),
+                y: this.y + this.radius * Math.sin(angle)
+            });
+        }
+        return points;
     }
 }
 
@@ -156,13 +161,13 @@ function polygonsOverlap(polygon1, polygon2) {
     return true;
 }
 
-function moveTriangles(trianglesObj, rectangleObj, hexesObj, counter) {
+function moveTriangles(trianglesObj, rectangleObj, hexesObj, counter, canvasWidth, canvasHeight) {
     trianglesObj.forEach(triangle => {
-        moveTriangle(triangle, rectangleObj, hexesObj, counter);
+        moveTriangle(triangle, rectangleObj, hexesObj, counter, canvasWidth, canvasHeight);
     });
 }
 
-function moveTriangle(triangleObj, rectangleObj, hexesObj, counter) {
+function moveTriangle(triangleObj, rectangleObj, hexesObj, counter, canvasWidth, canvasHeight) {
     const dx = rectangleObj.x - triangleObj.x;
     const dy = rectangleObj.y - triangleObj.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -184,23 +189,29 @@ function moveTriangle(triangleObj, rectangleObj, hexesObj, counter) {
         const newDirectionX = directionX + directionFluctuationFactor;
         const newDirectionY = directionY + directionFluctuationFactor;
 
-        if(!triangleObj.isCollidingWithMultiple(hexesObj)) {
-            triangleObj.x = triangleObj.x + newDirectionX * triangleSpeed;
-            triangleObj.y = triangleObj.y + newDirectionY * triangleSpeed;
-        } else {
-            triangleObj.x = triangleObj.x - newDirectionX * triangleSpeed;
-            triangleObj.y = triangleObj.y - newDirectionY * triangleSpeed;
+        const newX = triangleObj.x + newDirectionX * triangleSpeed;
+        const newY = triangleObj.y + newDirectionY * triangleSpeed;
+
+        // Check boundaries before updating position
+        if (newX >= 0 && newX <= canvasWidth && newY >= 0 && newY <= canvasHeight) {
+            if(!triangleObj.isCollidingWithMultiple(hexesObj)) {
+                triangleObj.x = newX;
+                triangleObj.y = newY;
+            } else {
+                triangleObj.x = triangleObj.x - newDirectionX * triangleSpeed;
+                triangleObj.y = triangleObj.y - newDirectionY * triangleSpeed;
+            }
         }
     }
 }
 
-function moveHexes(hexesObj, rectangleObj) {
+function moveHexes(hexesObj, rectangleObj, canvasWidth, canvasHeight) {
     hexesObj.forEach(hex => {
-        moveHex(hex, rectangleObj);
+        moveHex(hex, rectangleObj, canvasWidth, canvasHeight);
     });
 }
 
-function moveHex(hexObj, rectangleObj) {
+function moveHex(hexObj, rectangleObj, canvasWidth, canvasHeight) {
     const dx = rectangleObj.x - hexObj.x;
     const dy = rectangleObj.y - hexObj.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -219,7 +230,13 @@ function moveHex(hexObj, rectangleObj) {
         const newDirectionX = directionX + Math.sin(new Date().getTime() * 0.001) * 5;
         const newDirectionY = directionY + Math.cos(new Date().getTime() * 0.001) * 5;
 
-        hexObj.x = hexObj.x + newDirectionX * hexSpeed;
-        hexObj.y = hexObj.y + newDirectionY * hexSpeed;
+        const newX = hexObj.x + newDirectionX * hexSpeed;
+        const newY = hexObj.y + newDirectionY * hexSpeed;
+
+        // Check boundaries before updating position
+        if (newX >= 0 && newX <= canvasWidth && newY >= 0 && newY <= canvasHeight) {
+            hexObj.x = newX;
+            hexObj.y = newY;
+        }
     }
 }

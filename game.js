@@ -50,7 +50,7 @@ const gameState = {
     messageFlags: {
         gameOver: false,
         lifeLost: false,
-        dangerIncrease: false,
+        newTriangle: false,
         newObstacle: false,
         levelUp: false,
         newLife: false
@@ -180,8 +180,8 @@ function showMessages() {
     if (gameState.messageFlags.lifeLost) {
         displayLifeLostMessage(ctx, gameState.lives);
     }
-    if (gameState.messageFlags.dangerIncrease) {
-        displayDangerIncreaseMessage(ctx);
+    if (gameState.messageFlags.newTriangle) {
+        displayNewTriangleMessage(ctx);
     }
     if (gameState.messageFlags.newObstacle) {
         displayNewObstacleMessage(ctx, gameState.counter);
@@ -214,8 +214,8 @@ function newLife() {
 function updateGame() {
     if (!gameState.death.isDead) {
         calculateRectanglePosition();
-        moveTriangles(trianglesObj, rectangleObj, hexesObj, gameState.counter);
-        moveHexes(hexesObj, rectangleObj);
+        moveTriangles(trianglesObj, rectangleObj, hexesObj, gameState.counter, canvas.width, canvas.height);
+        moveHexes(hexesObj, rectangleObj, canvas.width, canvas.height);
 
         if (rectangleObj.isCollidingWith(circleObj)) {
             if (circleObj.special === true) {
@@ -294,9 +294,9 @@ function nextPhase() {
     if (gameState.counter % triangleFrequency === 0) {
         if (trianglesObj.length < triangleNumberLimit) {  // Limit number of triangles
             trianglesObj.push(newRandomTriangle());
-            gameState.messageFlags.dangerIncrease = true
+            gameState.messageFlags.newTriangle = true
             setTimeout(() => {
-                gameState.messageFlags.dangerIncrease = false;
+                gameState.messageFlags.newTriangle = false;
             }, 900);
         }
     }
@@ -357,9 +357,9 @@ function randomCirclePosition(rectangleObj, dimension) {
     do {
         position = Math.random() * (maxDimension - circleEdgeMargin);
         attempts++;
-    } while (position > rectanglePosition - minimumSpawnDistance &&
-    position < rectanglePosition + minimumSpawnDistance &&
-        attempts < 100);
+    } while (position > rectanglePosition - minimumSpawnDistance 
+        && position < rectanglePosition + minimumSpawnDistance 
+        && attempts < 100);
 
     return position;
 }

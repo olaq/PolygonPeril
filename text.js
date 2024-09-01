@@ -68,8 +68,8 @@ function displayLevelUpMessage(ctx) {
     displayText(ctx, 'Level up!', canvas.width / 2, canvas.height / 2 - 120, specialCircleColor, 20);
 }
 
-function displayDangerIncreaseMessage(ctx) {
-    displayText(ctx, 'Danger increased!', canvas.width / 2, canvas.height / 2 - 90, triangleColor, 20);
+function displayNewTriangleMessage(ctx) {
+    displayText(ctx, 'New Triangle!', canvas.width / 2, canvas.height / 2 - 90, triangleColor, 20);
 }
 
 function displayNewObstacleMessage(ctx) {
