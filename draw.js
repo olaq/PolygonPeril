@@ -57,7 +57,7 @@ function drawHeart(ctx, heartObj) {
 
     // Draw the pulsating heart
     ctx.font = `${heartSize}px Arial`;
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = heartObj.color;
     ctx.fillText('\u2764', heartObj.x - (heartSize / 2), heartObj.y + (heartSize / 2));
 
     // // Request the next animation frame

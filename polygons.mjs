@@ -1,10 +1,43 @@
-class Rectangle {
-    constructor(x, y, width, height, color) {
+class Polygon {
+    constructor(x, y, color) {
         this.x = x;
         this.y = y;
+        this.color = color;
+    }
+
+    // Abstract method to calculate the polygon representation
+    calculatePolygon() {
+        throw new Error("Method 'calculatePolygon()' must be implemented.");
+    }
+
+    isCollidingWith(otherPolygonObj) {
+        if(otherPolygonObj == null) {
+            return false;
+        }
+        let firstPolygon = this.calculatePolygon();
+        let otherPolygon = otherPolygonObj.calculatePolygon();
+        return polygonsOverlap(firstPolygon, otherPolygon);
+    }
+
+    isCollidingWithMultiple(otherPolygonObjs) {
+        if(otherPolygonObjs == null) {
+            return false;
+        }
+        let collide = false;
+        otherPolygonObjs.forEach(object => {
+            if (this.isCollidingWith(object)) {
+                collide = true;
+            }   
+        });
+        return collide;
+    }
+}
+
+class Rectangle extends Polygon {
+    constructor(x, y, width, height, color) {
+        super(x, y, color);
         this.width = width;
         this.height = height;
-        this.color = color;
 
         this.pulseDirection = 1;
         this.pulseSpeed = 0.07;
@@ -12,7 +45,6 @@ class Rectangle {
         this.maxSize = width * 1.05;
     }
 
-    // Method to calculate the polygon representation
     calculatePolygon() {
         return [
             {x: this.x - this.width, y: this.y - this.height},
@@ -22,7 +54,6 @@ class Rectangle {
         ];
     }
 
-    // Method to update the rectangle's size for the pulsating effect
     update() {
         this.width -= this.pulseDirection * this.pulseSpeed;
         this.height += this.pulseDirection * this.pulseSpeed;
@@ -35,14 +66,11 @@ class Rectangle {
     }
 }
 
-class Triangle {
+class Triangle extends Polygon {
     constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
+        super(x, y, color);
     }
 
-    // Method to calculate the polygon representation
     calculatePolygon() {
         return [
             {x: this.x, y: this.y},
@@ -52,33 +80,34 @@ class Triangle {
     }
 }
 
-class Circle {
+class Circle extends Polygon {
     constructor(x, y, radius, color, special = false) {
-        this.x = x;
-        this.y = y;
+        super(x, y, color);
         this.radius = radius;
-        this.color = color;
         this.special = special;
     }
+
+    calculatePolygon() {
+        return [
+            {x: this.x, y: this.y},
+            {x: this.x - this.radius, y: this.y},
+            {x: this.x + this.radius, y: this.y}
+        ];
+    }
 }
 
-class Heart {
+class Heart extends Circle {
     constructor(x, y, radius) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
+        super(x, y, radius, 'red', true);
     }
 }
 
-class Hex {
+class Hex extends Polygon {
     constructor(x, y, color, radius) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
+        super(x, y, color);
         this.radius = radius;
     }
 
-    // Method to calculate the polygon representation
     calculatePolygon() {
         const polygon = [];
         for (let i = 0; i < 6; i++) {
@@ -127,59 +156,13 @@ function polygonsOverlap(polygon1, polygon2) {
     return true;
 }
 
-function checkCollisionWithHeart(heartObj, rectangleObj) {
-    if (heartObj == null) {
-        return false;
-    }
-    const dx = heartObj.x - rectangleObj.x;
-    const dy = heartObj.y - rectangleObj.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    return distance < heartObj.radius + rectangleObj.width;
-}
-
-function checkCollisionWithTriangles(trianglesObj, rectangleObj) {
-    let collide = false
+function moveTriangles(trianglesObj, rectangleObj, hexesObj, counter) {
     trianglesObj.forEach(triangle => {
-        if (checkCollisionWithTriangle(triangle, rectangleObj)) {
-            collide = true;
-        }
-    });
-    return collide;
-}
-
-function checkCollisionWithTriangle(triangleObj, rectangleObj) {
-
-    let rectangle = rectangleObj.calculatePolygon();
-    let triangle = triangleObj.calculatePolygon();
-
-    return polygonsOverlap(rectangle, triangle);
-}
-
-function checkCollisionWithHexes(hexesObj, rectangleObj) {
-    let collide = false
-    hexesObj.forEach(hex => {
-            if (checkCollisionWithHex(hex, rectangleObj)) {
-                collide = true;
-            }
-        }
-    );
-    return collide;
-}
-
-function checkCollisionWithHex(hexObj, rectangleObj) {
-    let rectangle = rectangleObj.calculatePolygon();
-    let hex = hexObj.calculatePolygon();
-    return polygonsOverlap(rectangle, hex);
-}
-
-function moveTriangles(trianglesObj, rectangleObj, counter) {
-    trianglesObj.forEach(triangle => {
-        moveTriangle(triangle, rectangleObj, counter);
+        moveTriangle(triangle, rectangleObj, hexesObj, counter);
     });
 }
 
-function moveTriangle(triangleObj, rectangleObj, counter) {
+function moveTriangle(triangleObj, rectangleObj, hexesObj, counter) {
     const dx = rectangleObj.x - triangleObj.x;
     const dy = rectangleObj.y - triangleObj.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -201,8 +184,13 @@ function moveTriangle(triangleObj, rectangleObj, counter) {
         const newDirectionX = directionX + directionFluctuationFactor;
         const newDirectionY = directionY + directionFluctuationFactor;
 
-        triangleObj.x = triangleObj.x + newDirectionX * triangleSpeed;
-        triangleObj.y = triangleObj.y + newDirectionY * triangleSpeed;
+        if(!triangleObj.isCollidingWithMultiple(hexesObj)) {
+            triangleObj.x = triangleObj.x + newDirectionX * triangleSpeed;
+            triangleObj.y = triangleObj.y + newDirectionY * triangleSpeed;
+        } else {
+            triangleObj.x = triangleObj.x - newDirectionX * triangleSpeed;
+            triangleObj.y = triangleObj.y - newDirectionY * triangleSpeed;
+        }
     }
 }
 
@@ -234,19 +222,4 @@ function moveHex(hexObj, rectangleObj) {
         hexObj.x = hexObj.x + newDirectionX * hexSpeed;
         hexObj.y = hexObj.y + newDirectionY * hexSpeed;
     }
-}
-
-function checkCollisionWithCircle(circleObj, rectangleObj) {
-    const dx = circleObj.x - rectangleObj.x;
-    const dy = circleObj.y - rectangleObj.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    return distance < circleObj.radius + rectangleObj.width;
-}
-
-function resetTrianglesPositions(trianglesObj, triangleEdgeMargin) {
-    trianglesObj.forEach(triangle => {
-        triangle.x = randomSideX(triangleEdgeMargin);
-        triangle.y = randomSideY(triangleEdgeMargin);
-    });
 }
