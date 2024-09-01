@@ -33,18 +33,30 @@ let hexesObj = [];
 let heartObj;
 
 // game variables
-let counter = 0;
-let lives = 3;
-let level = 1;
-let gameRunning = false;
-let gameOverMessageFlag = false;
-let lifeLostMessageFlag = false;
-let dangerIncreaseMessageFlag = false;
-let newObstacleMessageFlag = false;
-let levelUpMessageFlag = false;
-let newLifeMessageFlag = false;
-let glowIntensity = 0;
-let isGlowing = false;
+const gameState = {
+    counter: 0,
+    lives: 3,
+    level: 1,
+    gameRunning: false,
+    messageFlags: {
+        gameOver: false,
+        lifeLost: false,
+        dangerIncrease: false,
+        newObstacle: false,
+        levelUp: false,
+        newLife: false
+    },
+    glow: {
+        intensity: 0,
+        isGlowing: false
+    },
+    death: {
+        isDead: false,
+        isRedGlowing: false,
+        redIntensity: 0,
+        opacity: 1
+    }
+};
 
 // FPS counter
 const fpsCounter = new FPSCounter();
@@ -151,37 +163,37 @@ function calculateRectanglePosition() {
 }
 
 function showMessages() {
-    if (lifeLostMessageFlag) {
+    if (gameState.messageFlags.lifeLost) {
         displayLifeLostMessage(ctx, lives);
     }
-    if (dangerIncreaseMessageFlag) {
+    if (gameState.messageFlags.dangerIncrease) {
         displayDangerIncreaseMessage(ctx);
     }
-    if (newObstacleMessageFlag) {
+    if (gameState.messageFlags.newObstacle) {
         displayNewObstacleMessage(ctx, counter);
     }
-    if (levelUpMessageFlag) {
+    if (gameState.messageFlags.levelUp) {
         displayLevelUpMessage(ctx, counter);
     }
-    if (newLifeMessageFlag) {
+    if (gameState.messageFlags.newLife) {
         displayNewLifeMessage(ctx);
     }
 }
 
 function levelUp() {
     level++;
-    levelUpMessageFlag = true
+    gameState.messageFlags.levelUp = true
     setTimeout(() => {
-        levelUpMessageFlag = false;
+        gameState.messageFlags.levelUp = false;
     }, 900);
 }
 
 function newLife() {
     lives++;
     heartObj = null;
-    newLifeMessageFlag = true
+    gameState.messageFlags.newLife = true
     setTimeout(() => {
-        newLifeMessageFlag = false;
+        gameState.messageFlags.newLife = false;
     }, 900);
 }
 
@@ -191,9 +203,7 @@ function updateGame() {
     moveHexes(hexesObj, rectangleObj);
 
     drawRectangle(ctx, rectangleObj);
-    if (isGlowing) {
-        drawGlow(ctx, rectangleObj);
-    }
+    glowRectangle(ctx, rectangleObj);
     drawCircle(ctx, circleObj);
     drawTriangles(ctx, trianglesObj);
     drawHexes(ctx, hexesObj);
@@ -223,13 +233,14 @@ function updateGame() {
 }
 
 function lostLife() {
+    // animateDeath()
     lives--;
-    lifeLostMessageFlag = true
+    gameState.messageFlags.lifeLost = true
     resetTrianglesPositions(trianglesObj);
     resetHexPositions(hexesObj);
     resetRectanglePosition();
     setTimeout(() => {
-        lifeLostMessageFlag = false;
+        gameState.messageFlags.lifeLost = false;
     }, 900);
 }
 
@@ -239,15 +250,15 @@ function nextPhase() {
     if (counter % 5 === 0) {
         if (counter % 15 === 0) {
             hexesObj.push(newRandomHex());
-            newObstacleMessageFlag = true
+            gameState.messageFlags.newObstacle = true
             setTimeout(() => {
-                newObstacleMessageFlag = false;
+                gameState.messageFlags.newObstacle = false;
             }, 900);
         } else {
             trianglesObj.push(newRandomTriangle());
-            dangerIncreaseMessageFlag = true
+            gameState.messageFlags.dangerIncrease = true
             setTimeout(() => {
-                dangerIncreaseMessageFlag = false;
+                gameState.messageFlags.dangerIncrease = false;
             }, 900);
         }
     }
@@ -364,12 +375,12 @@ function clearCanvas() {
  * Executes the game over logic.
  */
 function executeGameOver() {
-    gameOverMessageFlag = true;
+    gameState.messageFlags.gameOver = true;
 
     displayGameOver();
     // change game over state to false after 1 second
     setTimeout(() => {
-        gameOverMessageFlag = false;
+        gameState.messageFlags.gameOver = false;
         displayText(ctx, 'click to continue', canvas.width / 2, canvas.height / 2 + 100, 'red', 20);
 
         // add event listener to restart the game
@@ -399,23 +410,24 @@ function resetGameState() {
     gameRunning = false;
 }
 
-function drawGlow(ctx, rectangleObj) {
-    ctx.save();
-    ctx.shadowBlur = glowIntensity;
-    ctx.shadowColor = 'white';
-    drawRectangle(ctx, rectangleObj);
-    ctx.restore();
-
-    glowIntensity = Math.max(0, glowIntensity - 1);
+function glowRectangle(ctx, rectangleObj) {
+    if (gameState.glow.isGlowing) {
+        ctx.save();
+        ctx.shadowBlur = gameState.glow.intensity;
+        ctx.shadowColor = 'white';
+        drawRectangle(ctx, rectangleObj);
+        ctx.restore();
+        gameState.glow.intensity = Math.max(0, gameState.glow.intensity - 1);
+    }
 }
 
 function startGlowAnimation() {
-    isGlowing = true;
-    glowIntensity = 30;
+    gameState.glow.isGlowing = true;
+    gameState.glow.intensity = 30;
     setTimeout(() => {
-        isGlowing = false;
-        glowIntensity = 0;
-    }, 1000);
+        gameState.glow.isGlowing = false;
+        gameState.glow.intensity = 0;
+    }, 500);
 }
 
 window.onload = function () {
